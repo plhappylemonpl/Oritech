@@ -47,6 +47,8 @@
   "advancements.oritech.ai.description": "Obtenha um Chip de Super IA. Skynet quem? Não é apenas inteligente, é super inteligente!",
   "advancements.oritech.unholy": "Conhecimento Profano",
   "advancements.oritech.unholy.description": "Adquira uma inteligência profana. Conhecimento é poder, mas isso é algo a mais!",
+  "advancements.oritech.steam_engine": "Steam Dreams",
+  "advancements.oritech.steam_engine.description": "Harness the power of steam! You've turned water into energy—now let's hope it doesn't turn into a hot mess!",
   "button.oritech.input_mode_fill_left_to_right": "Padrão",
   "button.oritech.input_mode_fill_evenly": "Preencher Uniformemente",
   "button.oritech.input_mode_fill_matching_recipe": "Combinar Receita",
@@ -85,6 +87,7 @@
   "tooltip.oritech.soul_crop": "Cultivado em solo da alma. Contém uma alma.",
   "tooltip.oritech.superconductor": "Cannot connect to normal energy pipes.",
   "tooltip.oritech.jetpack_usage": "Needs electricity or turbofuel to fly.",
+  "tooltip.oritech.jetpack_usage2": "Is faster with turbofuel.",
   "tooltip.oritech.charger": "Used to charge and fill equipment.",
   "tooltip.oritech.addon_speed_desc": "Velocidade de Operação ",
   "tooltip.oritech.addon_efficiency_desc": "Eficiência Energética ",
@@ -189,7 +192,7 @@
   "tooltip.oritech.machine_efficiency": "Eficiência Energética",
   "title.oritech.machine_energy_production": "↗ %d RF/t ",
   "tooltip.oritech.steam_energy_production": "Produção total (inclui geradores encadeados)",
-  "title.oritech.steam_production": "🛞 %s su/t",
+  "title.oritech.steam_production": "↗ %s RF/t",
   "tooltip.oritech.steam_production": "Quantidade de gotas de vapor produzidas por tick. Qualquer excesso será perdido quando o armazenamento estiver cheio.",
   "title.oritech.steam_consumption": "🛞 %s su/t",
   "tooltip.oritech.steam_consumption": "Consumo total de vapor em unidades de armazenamento (gotas) por tick (inclui geradores encadeados)",
@@ -743,5 +746,9 @@
   "text.config.oritech-config.option.maxGateDist": "Maximum Particle Gate Distance",
   "text.config.oritech-config.option.endPortalRequiredSpeed": "Minimum End Portal Collision Energy",
   "text.config.oritech-config.option.netherPortalRequiredSpeed": "Minimum Nether Portal Collision Energy",
-  "text.config.oritech-config.option.blackHoleRequiredSpeed": "Minimum Black Hole Collision Energy"
+  "text.config.oritech-config.option.blackHoleRequiredSpeed": "Minimum Black Hole Collision Energy",
+  "text.config.oritech-config.section.blackHole": "Black Hole",
+  "text.config.oritech-config.option.pullTimeMultiplier": "Black Hole Pull Time Multiplier",
+  "text.config.oritech-config.option.pullRange": "Black Hole Pull Range",
+  "text.config.oritech-config.option.idleWaitTicks": "Black Hole Idle Wait Ticks"
 }
