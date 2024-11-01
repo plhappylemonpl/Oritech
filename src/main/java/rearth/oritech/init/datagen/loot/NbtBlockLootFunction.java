@@ -42,7 +42,7 @@ public class NbtBlockLootFunction extends ConditionalLootFunction {
                 nbt.putUuid("unstackable", UUID.randomUUID());
             }
         } else if (blockEntity instanceof SmallStorageBlockEntity storageEntity) {
-            if (storageEntity.getStorage(null).getAmount() > 0) {
+            if (storageEntity.getEnergy(null).getStoredAmount() > 0) {
                 storageEntity.writeNbt(nbt, context.getWorld().getRegistryManager());
                 // make all non-empty storage blocks unstackable
                 nbt.putUuid("unstackable", UUID.randomUUID());

@@ -1,6 +1,6 @@
 package rearth.oritech.block.blocks.pipes;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -9,13 +9,14 @@ import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.function.TriFunction;
 import rearth.oritech.Oritech;
 import rearth.oritech.block.entity.pipes.GenericPipeInterfaceEntity;
 import rearth.oritech.init.BlockContent;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +30,8 @@ public class EnergyPipeBlock extends GenericPipeBlock {
     }
     
     @Override
-    public BlockApiLookup<?, Direction> getSidesLookup() {
-        return EnergyStorage.SIDED;
+    public TriFunction<World, BlockPos, Direction, Boolean> apiValidationFunction() {
+        return ((world, pos, direction) -> EnergyApi.BLOCK.isPresent(world, pos, null, null, direction));   // TODO check if this loads null values
     }
     
     @Override

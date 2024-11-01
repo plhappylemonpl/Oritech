@@ -1,87 +1,84 @@
 package rearth.oritech.util;
 
-import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
-import team.reborn.energy.api.EnergyStorage;
+import earth.terrarium.common_storage_lib.storage.base.UpdateManager;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 
-public class DynamicEnergyStorage extends SnapshotParticipant<Long> implements EnergyStorage {
-    public long amount = 0;
+public class DynamicEnergyStorage implements ValueStorage, UpdateManager<Long> {
+    public long amount;
     public long capacity;
-    public long maxInsert, maxExtract;
+    public long maxInsert;
+    public long maxExtract;
+    private final Runnable onUpdate;
     
-    public DynamicEnergyStorage(long capacity, long maxInsert, long maxExtract) {
-        StoragePreconditions.notNegative(capacity);
-        StoragePreconditions.notNegative(maxInsert);
-        StoragePreconditions.notNegative(maxExtract);
-        
+    public DynamicEnergyStorage(long capacity, long maxInsert, long maxExtract, Runnable onUpdate) {
         this.capacity = capacity;
         this.maxInsert = maxInsert;
         this.maxExtract = maxExtract;
+        this.onUpdate = onUpdate;
     }
     
     @Override
-    protected Long createSnapshot() {
-        return amount;
-    }
-    
-    @Override
-    protected void readSnapshot(Long snapshot) {
-        amount = snapshot;
-    }
-    
-    @Override
-    public boolean supportsInsertion() {
-        return maxInsert > 0;
-    }
-    
-    @Override
-    public void onFinalCommit() {
-        super.onFinalCommit();
-    }
-    
-    @Override
-    public long insert(long maxAmount, TransactionContext transaction) {
-        StoragePreconditions.notNegative(maxAmount);
-        
-        long inserted = Math.min(maxInsert, Math.min(maxAmount, capacity - amount));
-        
-        if (inserted > 0) {
-            updateSnapshots(transaction);
-            amount += inserted;
-            return inserted;
-        }
-        
-        return 0;
-    }
-    
-    @Override
-    public boolean supportsExtraction() {
-        return maxExtract > 0;
-    }
-    
-    @Override
-    public long extract(long maxAmount, TransactionContext transaction) {
-        StoragePreconditions.notNegative(maxAmount);
-        
-        long extracted = Math.min(maxExtract, Math.min(maxAmount, amount));
-        
-        if (extracted > 0) {
-            updateSnapshots(transaction);
-            amount -= extracted;
-            return extracted;
-        }
-        
-        return 0;
-    }
-    
-    @Override
-    public long getAmount() {
+    public long getStoredAmount() {
         return amount;
     }
     
     @Override
     public long getCapacity() {
         return capacity;
+    }
+    
+    public void set(long amount) {
+        this.amount = amount;
+    }
+    
+    @Override
+    public boolean allowsInsertion() {
+        return true;
+    }
+    
+    @Override
+    public boolean allowsExtraction() {
+        return true;
+    }
+    
+    @Override
+    public long insert(long amount, boolean simulate) {
+        long inserted = Math.min(Math.min(maxInsert, amount), capacity - this.amount);
+        if (!simulate) {
+            this.amount += inserted;
+        }
+        return inserted;
+    }
+    
+    public long insertIgnoringLimit(long amount, boolean simulate) {
+        long inserted = Math.min(amount, capacity - this.amount);
+        if (!simulate) {
+            this.amount += inserted;
+        }
+        return inserted;
+    }
+    
+    @Override
+    public long extract(long amount, boolean simulate) {
+        long extracted = Math.min(Math.min(amount, maxExtract), this.amount);
+        if (!simulate) {
+            this.amount -= extracted;
+        }
+        return extracted;
+    }
+    
+    @Override
+    public Long createSnapshot() {
+        return amount;
+    }
+    
+    @Override
+    public void readSnapshot(Long snapshot) {
+        this.amount = snapshot;
+    }
+    
+    @Override
+    public void update() {
+        onUpdate.run();
     }
 }

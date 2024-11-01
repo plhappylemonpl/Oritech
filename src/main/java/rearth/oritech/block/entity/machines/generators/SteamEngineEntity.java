@@ -1,8 +1,5 @@
 package rearth.oritech.block.entity.machines.generators;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
@@ -12,7 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -33,10 +30,11 @@ import rearth.oritech.init.recipes.RecipeContent;
 import rearth.oritech.network.NetworkContent;
 import rearth.oritech.util.Geometry;
 import rearth.oritech.util.InventorySlotAssignment;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // progress is abused to sync active speed.
 public class SteamEngineEntity extends FluidMultiblockGeneratorBlockEntity {
@@ -271,23 +269,33 @@ public class SteamEngineEntity extends FluidMultiblockGeneratorBlockEntity {
     }
     
     @Override
-    protected Multimap<Direction, BlockApiCache<EnergyStorage, Direction>> getNeighborCaches(BlockPos pos, World world) {
+    protected Set<Pair<BlockPos, Direction>> getOutputTargets(BlockPos pos, World world) {
         
-        var facing = getFacing();
+        var res = new HashSet<Pair<BlockPos, Direction>>();
         
-        var res = ArrayListMultimap.<Direction, BlockApiCache<EnergyStorage, Direction>>create();
-        var northCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.north());
-        res.put(Direction.NORTH, northCache);
-        var eastCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.east());
-        res.put(Direction.EAST, eastCache);
-        var southCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.south());
-        res.put(Direction.SOUTH, southCache);
-        var westCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.west());
-        res.put(Direction.WEST, westCache);
+        var facing = getFacingForAddon();
+        var posA = new Vec3i(1, 0, 0);
+        var posB = new Vec3i(0, 0, -1);
+        var posC = new Vec3i(0, 0, 1);
+        var posD = new Vec3i(1, 0, -1);
+        var posE = new Vec3i(1, 0, 1);
+        var posF = new Vec3i(2, 0, 0);
+        var worldPosA = (BlockPos) Geometry.offsetToWorldPosition(facing, posA, pos);
+        var worldPosB = (BlockPos) Geometry.offsetToWorldPosition(facing, posB, pos);
+        var worldPosC = (BlockPos) Geometry.offsetToWorldPosition(facing, posC, pos);
+        var worldPosD = (BlockPos) Geometry.offsetToWorldPosition(facing, posD, pos);
+        var worldPosE = (BlockPos) Geometry.offsetToWorldPosition(facing, posE, pos);
+        var worldPosF = (BlockPos) Geometry.offsetToWorldPosition(facing, posF, pos);
         
-        res.removeAll(facing.rotateYCounterclockwise());
+        res.add(new Pair<>(worldPosA, Geometry.fromVector(Geometry.getForward(facing))));
+        res.add(new Pair<>(worldPosB, Geometry.fromVector(Geometry.getLeft(facing))));  // todo check these directions
+        res.add(new Pair<>(worldPosC, Geometry.fromVector(Geometry.getRight(facing))));
+        res.add(new Pair<>(worldPosD, Geometry.fromVector(Geometry.getLeft(facing))));
+        res.add(new Pair<>(worldPosE, Geometry.fromVector(Geometry.getRight(facing))));
+        res.add(new Pair<>(worldPosF, Geometry.fromVector(Geometry.getBackward(facing))));
         
         return res;
+        
     }
     
     @Override

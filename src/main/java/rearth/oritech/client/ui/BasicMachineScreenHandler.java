@@ -1,5 +1,7 @@
 package rearth.oritech.client.ui;
 
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import io.wispforest.owo.client.screens.SlotGenerator;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
@@ -16,10 +18,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rearth.oritech.block.base.entity.UpgradableGeneratorBlockEntity;
 import rearth.oritech.client.init.ModScreens;
-import rearth.oritech.util.EnergyProvider;
 import rearth.oritech.util.FluidProvider;
 import rearth.oritech.util.ScreenProvider;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class BasicMachineScreenHandler extends ScreenHandler {
     @NotNull
     protected final Inventory inventory;
     @NotNull
-    protected final EnergyStorage energyStorage;
+    protected final ValueStorage energyStorage;
     
     @NotNull
     protected final BlockPos blockPos;
@@ -65,8 +65,8 @@ public class BasicMachineScreenHandler extends ScreenHandler {
         inventory.onOpen(playerInventory.player);
         this.playerInventory = playerInventory;
         
-        if (blockEntity instanceof EnergyProvider energyProvider) {
-            energyStorage = energyProvider.getStorage(null);
+        if (blockEntity instanceof EnergyProvider.BlockEntity energyProvider) {
+            energyStorage = energyProvider.getEnergy(null);
         } else {
             energyStorage = null;
         }

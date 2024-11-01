@@ -1,7 +1,9 @@
 package rearth.oritech.block.behavior;
 
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.UpdateManager;
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBlockTags;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -15,8 +17,6 @@ import rearth.oritech.client.init.ParticleContent;
 import rearth.oritech.init.BlockContent;
 import rearth.oritech.init.datagen.data.TagContent;
 import rearth.oritech.util.DynamicEnergyStorage;
-import rearth.oritech.util.EnergyProvider;
-import team.reborn.energy.api.EnergyStorage;
 
 public class LaserArmBlockBehavior {
     static private LaserArmBlockBehavior noop;
@@ -31,9 +31,9 @@ public class LaserArmBlockBehavior {
             return false;
 
         // has an energy storage, try to transfer power to it
-        var storageCandidate = EnergyStorage.SIDED.find(world, blockPos, blockState, blockEntity, null);
+        var storageCandidate = EnergyApi.BLOCK.find(world, blockPos, blockState, blockEntity, null);
         // if the storage is not exposed (e.g. catalyst / deep drill / atomic forge), get it directly
-        if (storageCandidate == null && blockEntity instanceof EnergyProvider provider) storageCandidate = provider.getStorage(null);
+        if (storageCandidate == null && blockEntity instanceof EnergyProvider.BlockEntity provider) storageCandidate = provider.getEnergy(null);
         if (storageCandidate != null)
             return transferPowerBehavior.fireAtBlock(world, laserEntity, block, blockPos, blockState, blockEntity);
         
@@ -65,29 +65,34 @@ public class LaserArmBlockBehavior {
         transferPowerBehavior = new LaserArmBlockBehavior() {
             @Override
             public boolean fireAtBlock(World world, LaserArmBlockEntity laserEntity, Block block, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity) {
-                var storageCandidate = EnergyStorage.SIDED.find(world, blockPos, blockState, blockEntity, null);
-                if (storageCandidate == null && blockEntity instanceof EnergyProvider energyProvider)
-                    storageCandidate = energyProvider.getStorage(null);
-                var insertAmount = storageCandidate.getCapacity() - storageCandidate.getAmount();
+                var storageCandidate = EnergyApi.BLOCK.find(world, blockPos, blockState, blockEntity, null);
+                
+                if (storageCandidate == null && blockEntity instanceof EnergyProvider.BlockEntity energyProvider)
+                    storageCandidate = energyProvider.getEnergy(null);
+                
+                var insertAmount = storageCandidate.getCapacity() - storageCandidate.getStoredAmount();
                 if (insertAmount < 10)
                     return false;
+                
                 var transferCapacity = Math.min(insertAmount, laserEntity.energyRequiredToFire());
 
                 if (storageCandidate instanceof DynamicEnergyStorage dynamicStorage) {
-                    dynamicStorage.amount += transferCapacity;  // direct transfer, allowing to insert into any container, even when inserting isnt allowed (e.g. atomic forge)
-                    dynamicStorage.onFinalCommit(); // gross abuse of transaction system to force it to sync
-                } else {
-                    try (var tx = Transaction.openOuter()) {
-                        long inserted = storageCandidate.insert(transferCapacity, tx);
-                        if (inserted == transferCapacity) {
-                            tx.commit();
-                        } else {
-                            // inserted amount didn't match the expected inserted amount
-                            return false;
-                        }
+                    var inserted = dynamicStorage.insertIgnoringLimit(transferCapacity, true);
+                    if (inserted == transferCapacity) {
+                        dynamicStorage.insertIgnoringLimit(transferCapacity, false);
+                        dynamicStorage.update();
+                        return true;
                     }
+                    return false;
+                } else {
+                    var inserted = storageCandidate.insert(transferCapacity, true);
+                    if (inserted == transferCapacity) {
+                        storageCandidate.insert(transferCapacity, false);
+                        if (storageCandidate instanceof UpdateManager<?> manager) manager.update();
+                        return true;
+                    }
+                    return false;
                 }
-                return true;
             }
         };
         LaserArmBlock.registerBlockBehavior(BlockContent.ATOMIC_FORGE_BLOCK, transferPowerBehavior);

@@ -1,10 +1,13 @@
 package rearth.oritech.block.base.entity;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
+import earth.terrarium.common_storage_lib.context.impl.SimpleItemContext;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.item.impl.vanilla.WrappedVanillaContainer;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -19,9 +22,9 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
@@ -35,21 +38,16 @@ import rearth.oritech.client.ui.UpgradableMachineScreenHandler;
 import rearth.oritech.init.ItemContent;
 import rearth.oritech.network.NetworkContent;
 import rearth.oritech.util.*;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.EnergyStorageUtil;
-import team.reborn.energy.api.base.DelegatingEnergyStorage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class ExpandableEnergyStorageBlockEntity extends BlockEntity implements EnergyProvider, InventoryProvider, MachineAddonController, ScreenProvider, ExtendedScreenHandlerFactory, BlockEntityTicker<ExpandableEnergyStorageBlockEntity> {
+public abstract class ExpandableEnergyStorageBlockEntity extends BlockEntity implements EnergyProvider.BlockEntity, InventoryProvider, MachineAddonController, ScreenProvider, ExtendedScreenHandlerFactory, BlockEntityTicker<ExpandableEnergyStorageBlockEntity> {
     
     private final List<BlockPos> connectedAddons = new ArrayList<>();
     private final List<BlockPos> openSlots = new ArrayList<>();
     private BaseAddonData addonData = MachineAddonController.DEFAULT_ADDON_DATA;
-    private HashMap<Direction, BlockApiCache<EnergyStorage, Direction>> directionCaches;
     
     private boolean networkDirty = false;
     private boolean redstonePowered;
@@ -64,24 +62,18 @@ public abstract class ExpandableEnergyStorageBlockEntity extends BlockEntity imp
     protected final InventoryStorage inventoryStorage = InventoryStorage.of(inventory, null);
     
     //own storage
-    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(getDefaultCapacity(), getDefaultInsertRate(), getDefaultExtractionRate()) {
-        @Override
-        public void onFinalCommit() {
-            super.onFinalCommit();
-            ExpandableEnergyStorageBlockEntity.this.markDirty();
-        }
-    };
+    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(getDefaultCapacity(), getDefaultInsertRate(), getDefaultExtractionRate(), this::markDirty);
     
-    private final EnergyStorage outputStorage = new DelegatingEnergyStorage(energyStorage, null) {
+    private final ValueStorage outputStorage = new DelegatingEnergyStorage(energyStorage, null) {
         @Override
-        public boolean supportsInsertion() {
+        public boolean allowsInsertion() {
             return false;
         }
     };
     
-    private final EnergyStorage inputStorage = new DelegatingEnergyStorage(energyStorage, null) {
+    private final ValueStorage inputStorage = new DelegatingEnergyStorage(energyStorage, null) {
         @Override
-        public boolean supportsExtraction() {
+        public boolean allowsExtraction() {
             return false;
         }
     };
@@ -108,7 +100,6 @@ public abstract class ExpandableEnergyStorageBlockEntity extends BlockEntity imp
         if (!inventory.getStack(0).getItem().equals(ItemContent.OVERCHARGED_CRYSTAL)) return;
         
         energyStorage.amount = Math.min(energyStorage.capacity, energyStorage.amount + Oritech.CONFIG.overchargedCrystalChargeRate());
-        energyStorage.onFinalCommit();
     }
     
     private void outputEnergy() {
@@ -116,48 +107,33 @@ public abstract class ExpandableEnergyStorageBlockEntity extends BlockEntity imp
         
         chargeItems();
         
-        var availableOutput = Math.min(energyStorage.amount, energyStorage.maxExtract);
-        var totalInserted = 0L;
-        
-        if (directionCaches == null) directionCaches = getNeighborCaches(pos, world);
-        
-        try (var tx = Transaction.openOuter()) {
-            for (var entry : directionCaches.entrySet()) {
-                var insertDirection = entry.getKey().getOpposite();
-                var targetCandidate = entry.getValue().find(insertDirection);
-                if (targetCandidate == null) continue;
-                var inserted = targetCandidate.insert(availableOutput, tx);
-                availableOutput -= inserted;
-                totalInserted += inserted;
-                if (availableOutput <= 0) break;
-            }
-            energyStorage.extract(totalInserted, tx);
-            tx.commit();
+        // todo caching for targets? Used to be BlockApiCache.create()
+        var target = getOutputPosition(pos, world);
+        var candidate = EnergyApi.BLOCK.find(world, target.getRight(), target.getLeft());
+        if (candidate != null) {
+            TransferUtil.moveValue(energyStorage, candidate, Long.MAX_VALUE, false);
         }
-        
-        // can be skipped, since the change to the energy storage will already mark this as dirty
-        //this.markDirty();
     }
     
     private void chargeItems() {
-        EnergyStorageUtil.move(this.energyStorage,
-          ContainerItemContext.ofSingleSlot(getInventory(null).getSlots().get(0)).find(EnergyStorage.ITEM),
-          Long.MAX_VALUE,
-          null);
+        
+        var heldStack = inventory.heldStacks.get(0);
+        if (heldStack.isEmpty()) return;
+        
+        var slot = SimpleItemContext.of(new WrappedVanillaContainer(inventory), 0);
+        var slotEnergyContainer = EnergyApi.ITEM.find(heldStack, slot);
+        if (slotEnergyContainer != null) {
+            TransferUtil.moveValue(energyStorage, slotEnergyContainer, Long.MAX_VALUE, false);
+        }
     }
     
-    // defaults only to front block
-    protected HashMap<Direction, BlockApiCache<EnergyStorage, Direction>> getNeighborCaches(BlockPos pos, World world) {
-        
-        var res = new HashMap<Direction, BlockApiCache<EnergyStorage, Direction>>(6);
+    protected Pair<Direction, BlockPos> getOutputPosition(BlockPos pos, World world) {
         var facing = getFacing();
         var blockInFront = (BlockPos) Geometry.offsetToWorldPosition(facing, new Vec3i(-1, 0, 0), pos);
         var worldOffset = blockInFront.subtract(pos);
+        var direction = Direction.fromVector(worldOffset.getX(), worldOffset.getY(), worldOffset.getZ());
         
-        var frontCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, blockInFront);
-        res.put(Direction.fromVector(worldOffset.getX(), worldOffset.getY(), worldOffset.getZ()), frontCache);
-        
-        return res;
+        return new Pair<>(direction, blockInFront);
     }
     
     @Override
@@ -190,7 +166,7 @@ public abstract class ExpandableEnergyStorageBlockEntity extends BlockEntity imp
     
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         
         if (direction == null)
             return energyStorage;

@@ -1,6 +1,5 @@
 package rearth.oritech.block.blocks.pipes;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.minecraft.block.*;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
@@ -13,6 +12,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
 import rearth.oritech.Oritech;
 import rearth.oritech.block.entity.pipes.GenericPipeInterfaceEntity;
@@ -76,15 +76,15 @@ public abstract class GenericPipeBlock extends Block {
     }
     
     protected static boolean isValidConnectionTarget(Block block, World world, Direction direction, BlockPos pos, GenericPipeBlock self) {
-        var lookup = self.getSidesLookup();
-        return self.connectToOwnBlockType(block) || (lookup.find(world, pos, direction) != null && self.isCompatibleTarget(block));
+        var lookupFunction = self.apiValidationFunction();
+        return self.connectToOwnBlockType(block) || (lookupFunction.apply(world, pos, direction) && self.isCompatibleTarget(block));
     }
     
     public boolean isCompatibleTarget(Block block) {
         return true;
     }
     
-    public abstract BlockApiLookup<?, Direction> getSidesLookup();
+    public abstract TriFunction<World, BlockPos, Direction, Boolean> apiValidationFunction();
     
     public abstract BlockState getConnectionBlock();
     public abstract BlockState getNormalBlock();
@@ -141,7 +141,7 @@ public abstract class GenericPipeBlock extends Block {
         if (oldState.getBlock().equals(state.getBlock())) return;
         
         var pipeBlock = (GenericPipeBlock) state.getBlock();
-        var lookup = pipeBlock.getSidesLookup();
+        var lookup = pipeBlock.apiValidationFunction();
         
         // transform to interface block on placement when machine is neighbor
         if (hasMachineInDirection(Direction.NORTH, world, pos, lookup)
@@ -160,10 +160,10 @@ public abstract class GenericPipeBlock extends Block {
         
     }
     
-    public boolean hasMachineInDirection(Direction direction, World world, BlockPos ownPos, BlockApiLookup<?, Direction> lookup) {
+    public boolean hasMachineInDirection(Direction direction, World world, BlockPos ownPos, TriFunction<World, BlockPos, Direction, Boolean> lookup) {
         var neighborPos = ownPos.add(direction.getVector());
         var neighborState = world.getBlockState(neighborPos);
-        return !(neighborState.getBlock() instanceof GenericPipeBlock) && lookup.find(world, neighborPos, direction.getOpposite()) != null;
+        return !(neighborState.getBlock() instanceof GenericPipeBlock) && lookup.apply(world, neighborPos, direction.getOpposite());
     }
     
     @Override
@@ -205,7 +205,7 @@ public abstract class GenericPipeBlock extends Block {
         
         var world = (World) worldAccess;
         var pipeBlock = (GenericPipeBlock) state.getBlock();
-        var lookup = pipeBlock.getSidesLookup();
+        var lookup = pipeBlock.apiValidationFunction();
         
         // transform to interface when machine is placed as neighbor
         if (!(state.getBlock() instanceof GenericPipeConnectionBlock) &&

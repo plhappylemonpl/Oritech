@@ -1,6 +1,9 @@
 package rearth.oritech.block.entity.machines.interaction;
 
 import com.mojang.authlib.GameProfile;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.minecraft.block.Block;
@@ -58,26 +61,19 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.util.GeckoLibUtil;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static rearth.oritech.block.base.block.MultiblockMachine.ASSEMBLED;
 
-public class LaserArmBlockEntity extends BlockEntity implements GeoBlockEntity, BlockEntityTicker<LaserArmBlockEntity>, EnergyProvider, ScreenProvider, ExtendedScreenHandlerFactory, MultiblockMachineController, MachineAddonController, InventoryProvider {
+public class LaserArmBlockEntity extends BlockEntity implements GeoBlockEntity, BlockEntityTicker<LaserArmBlockEntity>, EnergyProvider.BlockEntity, ScreenProvider, ExtendedScreenHandlerFactory, MultiblockMachineController, MachineAddonController, InventoryProvider {
     
     public static final String LASER_PLAYER_NAME = "oritech_laser";
     private static final int BLOCK_BREAK_ENERGY = Oritech.CONFIG.laserArmConfig.blockBreakEnergyBase();
     
     // storage
-    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(getDefaultCapacity(), getDefaultInsertRate(), 0) {
-        @Override
-        public void onFinalCommit() {
-            super.onFinalCommit();
-            LaserArmBlockEntity.this.markDirty();
-        }
-    };
+    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(getDefaultCapacity(), getDefaultInsertRate(), 0, this::markDirty);
     
     public final SimpleInventory inventory = new SimpleInventory(3) {
         @Override
@@ -137,7 +133,7 @@ public class LaserArmBlockEntity extends BlockEntity implements GeoBlockEntity, 
         if (world.isClient() || !isActive(state))
             return;
         
-        if (!redstonePowered && energyStorage.getAmount() >= energyRequiredToFire()) {
+        if (!redstonePowered && energyStorage.getStoredAmount() >= energyRequiredToFire()) {
             if (hunterAddons > 0) {
                 fireAtLivingEntities(world, pos, state, blockEntity);
             }
@@ -604,7 +600,7 @@ public class LaserArmBlockEntity extends BlockEntity implements GeoBlockEntity, 
     }
     
     @Override
-    public EnergyStorage getEnergyStorageForLink() {
+    public ValueStorage getEnergyStorageForLink() {
         return energyStorage;
     }
     
@@ -618,7 +614,7 @@ public class LaserArmBlockEntity extends BlockEntity implements GeoBlockEntity, 
     
     // energyprovider
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     
@@ -798,7 +794,7 @@ public class LaserArmBlockEntity extends BlockEntity implements GeoBlockEntity, 
     }
     
     public boolean isTargetingEnergyContainer() {
-        var storageCandidate = EnergyStorage.SIDED.find(world, currentTarget, null);
+        var storageCandidate = EnergyApi.BLOCK.find(world, currentTarget, null);
         return storageCandidate != null || isTargetingAtomicForge() || isTargetingDeepdrill() || isTargetingCatalyst();
     }
     

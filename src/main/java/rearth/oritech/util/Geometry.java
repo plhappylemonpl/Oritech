@@ -9,6 +9,8 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.util.math.Direction.Axis;
 
+import static net.minecraft.util.math.Direction.*;
+
 public class Geometry {
     
     public static final float DEG_TO_RAD = 0.017453292519943295769236907684886f;
@@ -57,6 +59,39 @@ public class Geometry {
         return rotatePosition(BlockDirection.LEFT.pos, facing);
     }
     
+    public static Direction fromVector(Vec3i vector) {
+        
+        var x = vector.getX();
+        var y = vector.getY();
+        var z = vector.getZ();
+        
+        if (x == 0) {
+            if (y == 0) {
+                if (z > 0) {
+                    return SOUTH;
+                }
+                
+                if (z < 0) {
+                    return NORTH;
+                }
+            } else if (z == 0) {
+                if (y > 0) {
+                    return UP;
+                }
+                
+                return DOWN;
+            }
+        } else if (y == 0 && z == 0) {
+            if (x > 0) {
+                return EAST;
+            }
+            
+            return WEST;
+        }
+        
+        return null;
+    }
+    
     public enum BlockDirection {
         FORWARD(new BlockPos(-1, 0, 0)),
         BACKWARD(new BlockPos(1, 0, 0)),
@@ -79,7 +114,7 @@ public class Geometry {
         var minZ = shape.getMin(Axis.Z);
         var maxZ = shape.getMax(Axis.Z);
 
-        if (facing == Direction.NORTH) {
+        if (facing == NORTH) {
             if (face == BlockFace.FLOOR) return shape;
             if (face == BlockFace.WALL) 
                 return VoxelShapes.cuboid(1 - maxX, 1 - maxZ, 1 - maxY, 1 - minX, 1 - minZ, 1 - minY);
@@ -87,7 +122,7 @@ public class Geometry {
                 return VoxelShapes.cuboid(minX, 1 - maxY, 1 - maxZ, maxX, 1 - minY, 1 - minZ);
         }
 
-        if (facing == Direction.SOUTH) {
+        if (facing == SOUTH) {
             if (face == BlockFace.FLOOR)
                 return VoxelShapes.cuboid(1 - maxX, minY, 1 - maxZ, 1 - minX, maxY, 1 - minZ);
             if (face == BlockFace.WALL)

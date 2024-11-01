@@ -1,10 +1,8 @@
 package rearth.oritech.block.behavior;
 
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import earth.terrarium.common_storage_lib.context.impl.ModifyOnlyContext;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -13,12 +11,10 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.world.World;
 import rearth.oritech.block.blocks.machines.interaction.LaserArmBlock;
 import rearth.oritech.block.entity.machines.interaction.LaserArmBlockEntity;
-import team.reborn.energy.api.EnergyStorage;
 
 public class LaserArmEntityBehavior {
     static private LaserArmEntityBehavior transferPowerBehavior;
@@ -47,22 +43,16 @@ public class LaserArmEntityBehavior {
             public boolean fireAtEntity(World world, LaserArmBlockEntity laserEntity, LivingEntity entity) {
                 if (!(entity instanceof PlayerEntity player))
                     return false;
-                var playerStorage = PlayerInventoryStorage.of(player);
-                SingleSlotStorage<ItemVariant> packItem = playerStorage.getSlot(PlayerInventory.MAIN_SIZE + EquipmentSlot.CHEST.getEntitySlotId());
-                if (packItem == null) return false;
-                var energyItem = ContainerItemContext.ofPlayerSlot(player, packItem).find(EnergyStorage.ITEM);
-                if (energyItem == null || energyItem.getAmount() >= energyItem.getCapacity()) {
-                    return false;
+                
+                var chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
+                var context = new ModifyOnlyContext(chestItem);
+                var candidate = EnergyApi.ITEM.find(chestItem, context);
+                if (candidate != null) {
+                    var amount = TransferUtil.moveValue(laserEntity.getEnergyStorageForLink(), candidate, laserEntity.energyRequiredToFire(), false);
+                    return amount > 0;
                 }
-
-                try (var tx = Transaction.openOuter()) {
-                    long inserted = energyItem.insert(laserEntity.energyRequiredToFire(), tx);
-                    if (inserted > 0) {
-                        tx.commit();
-                        return true;
-                    }
-                    return false;
-                }
+                
+                return false;
             }
         };
         LaserArmBlock.registerEntityBehavior(EntityType.PLAYER, transferPowerBehavior);

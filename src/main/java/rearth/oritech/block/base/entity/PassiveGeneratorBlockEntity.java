@@ -1,27 +1,26 @@
 package rearth.oritech.block.base.entity;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import rearth.oritech.util.EnergyProvider;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.base.SimpleEnergyStorage;
+import rearth.oritech.util.SimpleEnergyStorage;
 
-import java.util.HashMap;
+import java.util.Set;
 
-public abstract class PassiveGeneratorBlockEntity extends BlockEntity implements EnergyProvider, BlockEntityTicker<PassiveGeneratorBlockEntity> {
+public abstract class PassiveGeneratorBlockEntity extends BlockEntity implements EnergyProvider.BlockEntity, BlockEntityTicker<PassiveGeneratorBlockEntity> {
     
-    protected final SimpleEnergyStorage energyStorage = new SimpleEnergyStorage(200_000, 0, 1000);
-    private HashMap<Direction, BlockApiCache<EnergyStorage, Direction>> directionCaches;
+    protected final SimpleEnergyStorage energyStorage = new SimpleEnergyStorage(200_000, 0, 5_000);
     
     public PassiveGeneratorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -32,35 +31,23 @@ public abstract class PassiveGeneratorBlockEntity extends BlockEntity implements
         if (world.isClient || !isProducing()) return;
         
         var producedAmount = getProductionRate();
-        energyStorage.amount = Math.min(energyStorage.amount + producedAmount, energyStorage.capacity);
-        this.markDirty();
+        if (energyStorage.insertIgnoringLimit(producedAmount, false) > 0) {
+            energyStorage.update();
+        }
         
         outputEnergy();
         
     }
     
     private void outputEnergy() {
-        if (energyStorage.amount <= 0) return;
-        var availableOutput = Math.min(energyStorage.amount, energyStorage.maxExtract);
-        var totalInserted = 0L;
+        if (energyStorage.getStoredAmount() <= 0) return;
         
-        if (directionCaches == null) directionCaches = getNeighborCaches(pos, world);
-        
-        try (var tx = Transaction.openOuter()) {
-            for (var entry : directionCaches.entrySet()) {
-                var insertDirection = entry.getKey().getOpposite();
-                var targetCandidate = entry.getValue().find(insertDirection);
-                if (targetCandidate == null) continue;
-                var inserted = targetCandidate.insert(availableOutput, tx);
-                availableOutput -= inserted;
-                totalInserted += inserted;
-                if (availableOutput <= 0) break;
-            }
-            energyStorage.extract(totalInserted, tx);
-            tx.commit();
+        // todo caching for targets? Used to be BlockApiCache.create()
+        for (var target : getOutputTargets(pos, world)) {
+            var candidate = EnergyApi.BLOCK.find(world, target.getLeft(), target.getRight());
+            if (candidate != null)
+                TransferUtil.moveValue(energyStorage, candidate, Long.MAX_VALUE, false);
         }
-        
-        this.markDirty();
     }
     
     public abstract int getProductionRate();
@@ -70,37 +57,19 @@ public abstract class PassiveGeneratorBlockEntity extends BlockEntity implements
     @Override
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
-        energyStorage.amount = nbt.getLong("energy");
+        energyStorage.set(nbt.getLong("energy"));
     }
     
     @Override
     protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
-        nbt.putLong("energy", energyStorage.getAmount());
+        nbt.putLong("energy", energyStorage.getStoredAmount());
     }
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     
-    protected HashMap<Direction, BlockApiCache<EnergyStorage, Direction>> getNeighborCaches(BlockPos pos, World world) {
-        
-        var res = new HashMap<Direction, BlockApiCache<EnergyStorage, Direction>>(6);
-        
-        var topCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.up());
-        res.put(Direction.DOWN, topCache);
-        var botCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.down());
-        res.put(Direction.UP, botCache);
-        var northCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.north());
-        res.put(Direction.SOUTH, northCache);
-        var eastCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.east());
-        res.put(Direction.WEST, eastCache);
-        var southCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.south());
-        res.put(Direction.NORTH, southCache);
-        var westCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.west());
-        res.put(Direction.EAST, westCache);
-        
-        return res;
-    }
+    protected abstract Set<Pair<BlockPos, Direction>> getOutputTargets(BlockPos pos, World world);
 }

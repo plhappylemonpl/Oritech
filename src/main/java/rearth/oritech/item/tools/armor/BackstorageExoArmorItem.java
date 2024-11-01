@@ -1,13 +1,13 @@
 package rearth.oritech.item.tools.armor;
 
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
+import earth.terrarium.common_storage_lib.context.impl.ModifyOnlyContext;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorMaterial;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -15,16 +15,16 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 import rearth.oritech.Oritech;
+import rearth.oritech.item.tools.util.OritechEnergyItem;
 import rearth.oritech.util.TooltipHelper;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.EnergyStorageUtil;
-import team.reborn.energy.api.base.SimpleEnergyItem;
 
 import java.util.List;
 
-public class BackstorageExoArmorItem extends ExoArmorItem implements SimpleEnergyItem {
+import static rearth.oritech.item.tools.harvesting.DrillItem.BAR_STEP_COUNT;
+
+public class BackstorageExoArmorItem extends ExoArmorItem implements OritechEnergyItem {
     
-    public BackstorageExoArmorItem(RegistryEntry<ArmorMaterial> material, Type type, Settings settings) {
+    public BackstorageExoArmorItem(RegistryEntry<ArmorMaterial> material, Type type, Item.Settings settings) {
         super(material, type, settings);
     }
     
@@ -32,39 +32,32 @@ public class BackstorageExoArmorItem extends ExoArmorItem implements SimpleEnerg
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
         if (world.isClient) return;
         
-        var tickPeriod = 20;
+        var tickPeriod = 10;
         if (world.getTime() % tickPeriod != 0) return;
         
         var isPlayer = entity instanceof PlayerEntity;
         var isEquipped = ((PlayerEntity) entity).getEquippedStack(EquipmentSlot.CHEST).equals(stack);
         
         if (isPlayer && isEquipped) {
-            distributePower((PlayerEntity) entity, stack, 2000);
+            distributePower((PlayerEntity) entity, stack);
         }
     }
     
-    private void distributePower(PlayerEntity player, ItemStack pack, long maxTransfer) {
+    private void distributePower(PlayerEntity player, ItemStack pack) {
         
-        var playerStorage = PlayerInventoryStorage.of(player);
-        SingleSlotStorage<ItemVariant> packItem = null;
-        
-        for (int i = 0; i < player.getInventory().size(); i++) {
-            if (player.getInventory().getStack(i) == pack) {
-                packItem = playerStorage.getSlot(i);
-                break;
-            }
-        }
-        
-        if (packItem == null) return;
-        var energyItem = ContainerItemContext.ofPlayerSlot(player, packItem).find(EnergyStorage.ITEM);
-        if (energyItem == null) return;
-        if (energyItem.getAmount() <= 10) return;
+        var slot = new ModifyOnlyContext(pack);
+        var storage = EnergyApi.ITEM.find(pack, slot);
+        if (storage.getStoredAmount() <= 10) return;
         
         for (int i = 0; i < player.getInventory().size(); i++) {
             var stack = player.getInventory().getStack(i);
             if (stack.isEmpty() || stack == pack) continue;
             
-            EnergyStorageUtil.move(energyItem, ContainerItemContext.ofPlayerSlot(player, playerStorage.getSlot(i)).find(EnergyStorage.ITEM), maxTransfer, null);
+            var stackContext = new ModifyOnlyContext(stack);
+            var stackStorage = EnergyApi.ITEM.find(stack, stackContext);
+            if (stackStorage == null || stackStorage.getStoredAmount() >= stackStorage.getCapacity()) return;
+            
+            TransferUtil.moveValue(storage, stackStorage, Long.MAX_VALUE, false);
         }
     }
     
@@ -94,8 +87,7 @@ public class BackstorageExoArmorItem extends ExoArmorItem implements SimpleEnerg
     }
     
     public int getItemBarStep(ItemStack stack) {
-        var energyItem = (SimpleEnergyItem) stack.getItem();
-        return Math.round((energyItem.getStoredEnergy(stack) * 100f / energyItem.getEnergyCapacity(stack)) * 13) / 100;
+        return Math.round((getStoredEnergy(stack) * 100f / this.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
     }
     
     @Override

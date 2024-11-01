@@ -1,5 +1,7 @@
 package rearth.oritech.block.entity.arcane;
 
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.minecraft.block.BlockState;
@@ -30,11 +32,7 @@ import rearth.oritech.client.init.ParticleContent;
 import rearth.oritech.client.ui.CatalystScreenHandler;
 import rearth.oritech.init.BlockEntitiesContent;
 import rearth.oritech.network.NetworkContent;
-import rearth.oritech.util.AutoPlayingSoundKeyframeHandler;
-import rearth.oritech.util.EnergyProvider;
-import rearth.oritech.util.InventoryInputMode;
-import rearth.oritech.util.InventoryProvider;
-import rearth.oritech.util.ScreenProvider;
+import rearth.oritech.util.*;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -42,13 +40,11 @@ import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.base.SimpleEnergyStorage;
 
 import java.util.List;
 
 public class EnchantmentCatalystBlockEntity extends BaseSoulCollectionEntity
-  implements InventoryProvider, EnergyProvider, ScreenProvider, GeoBlockEntity, BlockEntityTicker<EnchantmentCatalystBlockEntity>, ExtendedScreenHandlerFactory<ModScreens.BasicData> {
+  implements InventoryProvider, EnergyProvider.BlockEntity, ScreenProvider, GeoBlockEntity, BlockEntityTicker<EnchantmentCatalystBlockEntity>, ExtendedScreenHandlerFactory<ModScreens.BasicData> {
     
     public static final RawAnimation IDLE = RawAnimation.begin().thenLoop("idle");
     public static final RawAnimation STABILIZED = RawAnimation.begin().thenLoop("stabilized");
@@ -75,12 +71,7 @@ public class EnchantmentCatalystBlockEntity extends BaseSoulCollectionEntity
         }
     };
     
-    public final SimpleEnergyStorage energyStorage = new SimpleEnergyStorage(50000, 10000, 0) {
-        @Override
-        protected void onFinalCommit() {
-            EnchantmentCatalystBlockEntity.this.markDirty();
-        }
-    };
+    public final SimpleEnergyStorage energyStorage = new SimpleEnergyStorage(50000, 10000, 0);
     
     protected final InventoryStorage inventoryStorage = InventoryStorage.of(inventory, null);
     
@@ -94,11 +85,12 @@ public class EnchantmentCatalystBlockEntity extends BaseSoulCollectionEntity
         if (world.isClient) return;
         
         // check if powered, and adjust soul capacity
-        if (energyStorage.amount > 0) {
-            var gainedSoulCapacity = energyStorage.amount / Oritech.CONFIG.catalystRFPerSoul();
-            energyStorage.amount = 0;
+        if (energyStorage.getStoredAmount() > 0) {
+            var gainedSoulCapacity = energyStorage.getStoredAmount() / Oritech.CONFIG.catalystRFPerSoul();
+            energyStorage.set(0);
             var newMax = baseSoulCapacity + gainedSoulCapacity;
             adjustMaxSouls(newMax);
+            this.markDirty();
         } else if (maxSouls > baseSoulCapacity) {
             adjustMaxSouls(baseSoulCapacity);
         }
@@ -331,7 +323,7 @@ public class EnchantmentCatalystBlockEntity extends BaseSoulCollectionEntity
     }
 
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     

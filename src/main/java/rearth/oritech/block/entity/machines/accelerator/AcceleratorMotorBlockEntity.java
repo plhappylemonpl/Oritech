@@ -1,42 +1,40 @@
 package rearth.oritech.block.entity.machines.accelerator;
 
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import rearth.oritech.Oritech;
 import rearth.oritech.init.BlockEntitiesContent;
-import rearth.oritech.util.EnergyProvider;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.base.SimpleEnergyStorage;
+import rearth.oritech.util.SimpleEnergyStorage;
 
-public class AcceleratorMotorBlockEntity extends BlockEntity implements EnergyProvider {
+public class AcceleratorMotorBlockEntity extends BlockEntity implements EnergyProvider.BlockEntity {
     
-    private final EnergyStorage energyStorage = new SimpleEnergyStorage(5_000_000, 5_000_000, 5_000_000);
+    // TODO check if we actually want the version with the data manager here
+    private final SimpleEnergyStorage energyStorage = new SimpleEnergyStorage(this, Oritech.ENERGY_CONTENT, 5_000_000, 5_000_000, 5_000_000);
     
     public AcceleratorMotorBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntitiesContent.ACCELERATOR_MOTOR_BLOCK_ENTITY, pos, state);
     }
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     
     @Override
     protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
-        nbt.putLong("energy", energyStorage.getAmount());
+        nbt.putLong("energy", energyStorage.getStoredAmount());
     }
     
     @Override
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
-        try (var tx  = Transaction.openOuter()) {
-            energyStorage.insert(nbt.getLong("energy"), tx);
-            tx.commit();
-        }
+        energyStorage.set(nbt.getLong("energy"));
     }
 }

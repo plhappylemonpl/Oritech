@@ -6,6 +6,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ToolComponent;
 import net.minecraft.component.type.ToolComponent.Rule;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.tag.BlockTags;
@@ -15,7 +16,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import rearth.oritech.Oritech;
 import rearth.oritech.item.tools.util.OritechEnergyItem;
-import team.reborn.energy.api.base.SimpleEnergyItem;
 
 import java.util.List;
 
@@ -40,10 +40,13 @@ public class ChainsawItem extends AxeItem implements OritechEnergyItem {
     
     @Override
     public boolean postMine(ItemStack stack, World world, BlockState state, BlockPos pos, LivingEntity miner) {
+        
+        if (!(miner instanceof PlayerEntity player)) return true;
+        
         var amount = state.getBlock().getHardness() * energyUsageMultiplier;
         amount = Math.min(amount, this.getStoredEnergy(stack));
         
-        return this.tryUseEnergy(stack, (long) amount);
+        return this.tryUseEnergy(stack, (long) amount, player);
     }
     
     @Override
@@ -71,8 +74,7 @@ public class ChainsawItem extends AxeItem implements OritechEnergyItem {
     
     @Override
     public int getItemBarStep(ItemStack stack) {
-        var energyItem = (SimpleEnergyItem) stack.getItem();
-        return Math.round((energyItem.getStoredEnergy(stack) * 100f / energyItem.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
+        return Math.round((getStoredEnergy(stack) * 100f / this.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
     }
     
     @Override

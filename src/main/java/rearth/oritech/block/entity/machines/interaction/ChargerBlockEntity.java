@@ -1,7 +1,12 @@
 package rearth.oritech.block.entity.machines.interaction;
 
+import earth.terrarium.common_storage_lib.context.impl.SimpleItemContext;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.item.impl.vanilla.WrappedVanillaContainer;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
@@ -36,20 +41,12 @@ import rearth.oritech.init.ComponentContent;
 import rearth.oritech.item.tools.armor.BaseJetpackItem;
 import rearth.oritech.network.NetworkContent;
 import rearth.oritech.util.*;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.EnergyStorageUtil;
 
 import java.util.List;
 
-public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker<ChargerBlockEntity>, FluidProvider, EnergyProvider, InventoryProvider, ScreenProvider, ExtendedScreenHandlerFactory {
+public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker<ChargerBlockEntity>, FluidProvider, EnergyProvider.BlockEntity, InventoryProvider, ScreenProvider, ExtendedScreenHandlerFactory {
     
-    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Oritech.CONFIG.charger.energyCapacity(), Oritech.CONFIG.charger.maxEnergyInsertion(), Oritech.CONFIG.charger.maxEnergyExtraction()) {
-        @Override
-        public void onFinalCommit() {
-            super.onFinalCommit();
-            ChargerBlockEntity.this.markDirty();
-        }
-    };
+    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Oritech.CONFIG.charger.energyCapacity(), Oritech.CONFIG.charger.maxEnergyInsertion(), Oritech.CONFIG.charger.maxEnergyExtraction(), this::markDirty);
     
     // 0 = bucket/item to be charged/filled, 1 = empty bucket/charged/fill item
     public final SimpleInventory inventory = new SimpleSidedInventory(2, new InventorySlotAssignment(0, 1, 1, 1)) {
@@ -116,6 +113,12 @@ public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker
     }
     
     @Override
+    public void markDirty() {
+        super.markDirty();
+        networkDirty = true;
+    }
+    
+    @Override
     protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
         SingleVariantStorage.writeNbt(fluidStorage, FluidVariant.CODEC, nbt, registryLookup);
@@ -141,17 +144,16 @@ public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker
     // return true if nothing is left to charge
     private boolean chargeItems() {
         
-        var container = ContainerItemContext.ofSingleSlot(inventoryStorage.getSlot(0)).find(EnergyStorage.ITEM);
-        if (container == null) return true;
+        var heldStack = inventory.heldStacks.get(0);
         
-        var moved = EnergyStorageUtil.move(this.energyStorage,
-          container,
-          Long.MAX_VALUE,
-          null);
-        
-        if (moved > 0) networkDirty = true;
-        
-        return container.getAmount() >= container.getCapacity();
+        var slot = SimpleItemContext.of(new WrappedVanillaContainer(inventory), 0);
+        var slotEnergyContainer = EnergyApi.ITEM.find(heldStack, slot);
+        if (slotEnergyContainer != null) {
+            TransferUtil.moveValue(energyStorage, slotEnergyContainer, Long.MAX_VALUE, false);
+            return slotEnergyContainer.getStoredAmount() >= slotEnergyContainer.getCapacity();
+        } else {
+            return true;
+        }
     }
     
     // return true if nothing is left to fill
@@ -212,7 +214,7 @@ public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker
     }
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     

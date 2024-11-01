@@ -20,15 +20,16 @@ import rearth.oritech.block.entity.machines.addons.*;
 import rearth.oritech.block.entity.machines.generators.*;
 import rearth.oritech.block.entity.machines.interaction.*;
 import rearth.oritech.block.entity.machines.processing.*;
-import rearth.oritech.block.entity.machines.storage.*;
+import rearth.oritech.block.entity.machines.storage.CreativeStorageBlockEntity;
+import rearth.oritech.block.entity.machines.storage.LargeStorageBlockEntity;
+import rearth.oritech.block.entity.machines.storage.SmallFluidTankEntity;
+import rearth.oritech.block.entity.machines.storage.SmallStorageBlockEntity;
 import rearth.oritech.block.entity.pipes.EnergyPipeInterfaceEntity;
 import rearth.oritech.block.entity.pipes.FluidPipeInterfaceEntity;
 import rearth.oritech.block.entity.pipes.ItemFilterBlockEntity;
 import rearth.oritech.block.entity.pipes.ItemPipeInterfaceEntity;
-import rearth.oritech.util.EnergyProvider;
 import rearth.oritech.util.FluidProvider;
 import rearth.oritech.util.InventoryProvider;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -224,8 +225,9 @@ public class BlockEntitiesContent implements AutoRegistryContainer<BlockEntityTy
     public void postProcessField(String namespace, BlockEntityType<?> value, String identifier, Field field) {
         AutoRegistryContainer.super.postProcessField(namespace, value, identifier, field);
         
-        if (field.isAnnotationPresent(AssignSidedEnergy.class))
-            EnergyStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> ((EnergyProvider) blockEntity).getStorage(direction), value);
+        // TODO do I need this?
+//        if (field.isAnnotationPresent(AssignSidedEnergy.class))
+//            EnergyStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> ((EnergyProvider) blockEntity).getStorage(direction), value);
         
         if (field.isAnnotationPresent(AssignSidedFluid.class))
             FluidStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> ((FluidProvider) blockEntity).getFluidStorage(direction), value);

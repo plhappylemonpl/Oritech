@@ -1,11 +1,8 @@
 package rearth.oritech.block.entity.machines.generators;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.minecraft.block.BlockState;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
@@ -16,9 +13,10 @@ import rearth.oritech.client.init.ModScreens;
 import rearth.oritech.init.BlockEntitiesContent;
 import rearth.oritech.init.recipes.OritechRecipeType;
 import rearth.oritech.init.recipes.RecipeContent;
-import team.reborn.energy.api.EnergyStorage;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LavaGeneratorEntity extends FluidMultiblockGeneratorBlockEntity {
     public LavaGeneratorEntity(BlockPos pos, BlockState state) {
@@ -26,32 +24,22 @@ public class LavaGeneratorEntity extends FluidMultiblockGeneratorBlockEntity {
     }
     
     @Override
-    protected Multimap<Direction, BlockApiCache<EnergyStorage, Direction>> getNeighborCaches(BlockPos pos, World world) {
+    protected Set<Pair<BlockPos, Direction>> getOutputTargets(BlockPos pos, World world) {
         
-        var res = ArrayListMultimap.<Direction, BlockApiCache<EnergyStorage, Direction>>create();
-        
-        var topCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.up(2));
-        res.put(Direction.UP, topCache);
-        var botCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.down());
-        res.put(Direction.DOWN, botCache);
-        var northCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.north());
-        res.put(Direction.NORTH, northCache);
-        var eastCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.east());
-        res.put(Direction.EAST, eastCache);
-        var southCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.south());
-        res.put(Direction.SOUTH, southCache);
-        var westCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.west());
-        res.put(Direction.WEST, westCache);
-        var northCacheUp = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.north().up());
-        res.put(Direction.NORTH, northCacheUp);
-        var eastCacheUp = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.east().up());
-        res.put(Direction.EAST, eastCacheUp);
-        var southCacheUp = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.south().up());
-        res.put(Direction.SOUTH, southCacheUp);
-        var westCacheUp = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.west().up());
-        res.put(Direction.WEST, westCacheUp);
+        var res = new HashSet<Pair<BlockPos, Direction>>();
+        res.add(new Pair<>(pos.up(2), Direction.DOWN));
+        res.add(new Pair<>(pos.down(), Direction.DOWN));
+        res.add(new Pair<>(pos.east(), Direction.WEST));
+        res.add(new Pair<>(pos.east().up(), Direction.WEST));
+        res.add(new Pair<>(pos.south(), Direction.NORTH));
+        res.add(new Pair<>(pos.south().up(), Direction.NORTH));
+        res.add(new Pair<>(pos.west(), Direction.EAST));
+        res.add(new Pair<>(pos.west().up(), Direction.EAST));
+        res.add(new Pair<>(pos.north(), Direction.SOUTH));
+        res.add(new Pair<>(pos.north().up(), Direction.SOUTH));
         
         return res;
+        
     }
     
     @Override

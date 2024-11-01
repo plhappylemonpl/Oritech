@@ -1,5 +1,6 @@
 package rearth.oritech.block.base.entity;
 
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -9,7 +10,6 @@ import net.minecraft.util.math.Direction;
 import rearth.oritech.block.base.block.MultiblockMachine;
 import rearth.oritech.util.InventoryProvider;
 import rearth.oritech.util.MultiblockMachineController;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
 
@@ -61,7 +61,7 @@ public abstract class MultiblockGeneratorBlockEntity extends UpgradableGenerator
     }
     
     @Override
-    public EnergyStorage getEnergyStorageForLink() {
+    public ValueStorage getEnergyStorageForLink() {
         return energyStorage;
     }
     

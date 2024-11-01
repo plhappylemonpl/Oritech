@@ -1,5 +1,11 @@
 package rearth.oritech.item.tools.util;
 
+import earth.terrarium.common_storage_lib.context.ItemContext;
+import earth.terrarium.common_storage_lib.context.impl.IsolatedSlotContext;
+import earth.terrarium.common_storage_lib.context.impl.PlayerContext;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -10,11 +16,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.random.Random;
-import team.reborn.energy.api.base.SimpleEnergyItem;
+import rearth.oritech.Oritech;
+import rearth.oritech.util.SimpleEnergyStorage;
 
-// strongly based on reborncore
-// https://github.com/TechReborn/TechReborn/blob/1.21/RebornCore/src/main/java/reborncore/common/powerSystem/RcEnergyItem.java#L94
-public interface OritechEnergyItem extends SimpleEnergyItem, FabricItem {
+public interface OritechEnergyItem extends EnergyProvider.Item, FabricItem {
     default long getEnergyCapacity(ItemStack stack) {return 10_000;}
     
     default long getEnergyMaxInput(ItemStack stack) {
@@ -30,15 +35,28 @@ public interface OritechEnergyItem extends SimpleEnergyItem, FabricItem {
         return false;
     }
     
-    @Override
-    default boolean tryUseEnergy(ItemStack stack, long amount){
+    default boolean tryUseEnergy(ItemStack stack, long amount, PlayerEntity player){
         Random random = Random.create();
         
         int unbreakingLevel = getUnbreakingLevel(stack);
         if (unbreakingLevel > 0) {
             amount = amount / (random.nextInt(unbreakingLevel) + 1);
         }
-        return SimpleEnergyItem.super.tryUseEnergy(stack, amount);
+        
+        // this feels like a horrible abomination
+        var slot = PlayerContext.ofHand(player, Hand.MAIN_HAND);
+        var storage = slot.find(EnergyApi.ITEM);
+        if (storage instanceof SimpleEnergyStorage simpleStorage) {
+            var extracted = simpleStorage.extractIgnoringLimit(amount, false);
+            if (extracted > 0) {
+                simpleStorage.update();
+            }
+            
+            return extracted == amount;
+        }
+        
+        return false;
+        
     }
     
     // A hack to do this without context of the DRM
@@ -50,5 +68,15 @@ public interface OritechEnergyItem extends SimpleEnergyItem, FabricItem {
             }
         }
         return 0;
+    }
+    
+    default long getStoredEnergy(ItemStack stack) {
+        var slot = new IsolatedSlotContext(stack);
+        return getEnergy(stack, slot).getStoredAmount();
+    }
+    
+    @Override
+    default ValueStorage getEnergy(ItemStack stack, ItemContext context) {
+        return new SimpleEnergyStorage(context, Oritech.ENERGY_CONTENT.componentType(), getEnergyCapacity(stack), getEnergyMaxInput(stack), getEnergyMaxOutput(stack));
     }
 }

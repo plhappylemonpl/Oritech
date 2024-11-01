@@ -3,6 +3,7 @@ package rearth.oritech.item.tools.harvesting;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
@@ -15,7 +16,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import rearth.oritech.Oritech;
 import rearth.oritech.item.tools.util.OritechEnergyItem;
-import team.reborn.energy.api.base.SimpleEnergyItem;
 
 import java.util.List;
 
@@ -30,10 +30,13 @@ public class DrillItem extends MiningToolItem implements OritechEnergyItem {
     
     @Override
     public boolean postMine(ItemStack stack, World world, BlockState state, BlockPos pos, LivingEntity miner) {
+        
+        if (!(miner instanceof PlayerEntity player)) return true;
+        
         var amount = state.getBlock().getHardness() * energyUsageMultiplier;
         amount = Math.min(amount, this.getStoredEnergy(stack));
         
-        return this.tryUseEnergy(stack, (long) amount);
+        return this.tryUseEnergy(stack, (long) amount, player);
     }
     
     @Override
@@ -61,8 +64,7 @@ public class DrillItem extends MiningToolItem implements OritechEnergyItem {
     
     @Override
     public int getItemBarStep(ItemStack stack) {
-        var energyItem = (SimpleEnergyItem) stack.getItem();
-        return Math.round((energyItem.getStoredEnergy(stack) * 100f / energyItem.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
+        return Math.round((getStoredEnergy(stack) * 100f / this.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
     }
     
     @Override

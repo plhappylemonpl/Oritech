@@ -1,5 +1,7 @@
 package rearth.oritech.block.entity.machines;
 
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -11,17 +13,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import rearth.oritech.block.blocks.MachineCoreBlock;
 import rearth.oritech.init.BlockEntitiesContent;
-import rearth.oritech.util.EnergyProvider;
-import rearth.oritech.util.FluidProvider;
-import rearth.oritech.util.InventoryProvider;
-import rearth.oritech.util.MultiblockMachineController;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.base.DelegatingEnergyStorage;
-import team.reborn.energy.api.base.SimpleEnergyStorage;
+import rearth.oritech.util.*;
 
 import java.util.Objects;
 
-public class MachineCoreEntity extends BlockEntity implements InventoryProvider, EnergyProvider, FluidProvider {
+public class MachineCoreEntity extends BlockEntity implements InventoryProvider, EnergyProvider.BlockEntity, FluidProvider {
     
     private BlockPos controllerPos = BlockPos.ORIGIN;
     private MultiblockMachineController controllerEntity;
@@ -64,7 +60,7 @@ public class MachineCoreEntity extends BlockEntity implements InventoryProvider,
         return controllerEntity;
     }
     
-    private EnergyStorage getMainStorage() {
+    private ValueStorage getMainStorage() {
         
         var isUsed = this.getCachedState().get(MachineCoreBlock.USED);
         if (!isUsed) return null;
@@ -89,7 +85,7 @@ public class MachineCoreEntity extends BlockEntity implements InventoryProvider,
     }
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         if (getCachedController() == null || getCachedController().getEnergyStorageForLink() == null) {
             return null;
         } else {

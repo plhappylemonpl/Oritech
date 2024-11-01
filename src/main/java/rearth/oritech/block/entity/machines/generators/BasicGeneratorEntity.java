@@ -7,8 +7,11 @@ import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
 import rearth.oritech.Oritech;
 import rearth.oritech.block.base.entity.UpgradableGeneratorBlockEntity;
 import rearth.oritech.client.init.ModScreens;
@@ -17,8 +20,10 @@ import rearth.oritech.init.recipes.OritechRecipeType;
 import rearth.oritech.init.recipes.RecipeContent;
 import rearth.oritech.util.InventorySlotAssignment;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BasicGeneratorEntity extends UpgradableGeneratorBlockEntity {
     
@@ -55,6 +60,21 @@ public class BasicGeneratorEntity extends UpgradableGeneratorBlockEntity {
             markNetDirty();
             markDirty();
         }
+    }
+    
+    @Override
+    protected Set<Pair<BlockPos, Direction>> getOutputTargets(BlockPos pos, World world) {
+        
+        var res = new HashSet<Pair<BlockPos, Direction>>();
+        res.add(new Pair<>(pos.up(), Direction.DOWN));
+        res.add(new Pair<>(pos.down(), Direction.DOWN));
+        res.add(new Pair<>(pos.east(), Direction.WEST));
+        res.add(new Pair<>(pos.south(), Direction.NORTH));
+        res.add(new Pair<>(pos.west(), Direction.EAST));
+        res.add(new Pair<>(pos.north(), Direction.SOUTH));
+        
+        return res;
+        
     }
     
     @Override

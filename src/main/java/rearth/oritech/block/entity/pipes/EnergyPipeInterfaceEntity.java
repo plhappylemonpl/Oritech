@@ -1,11 +1,12 @@
 package rearth.oritech.block.entity.pipes;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -14,19 +15,15 @@ import rearth.oritech.block.blocks.pipes.EnergyPipeBlock;
 import rearth.oritech.block.blocks.pipes.SuperConductorBlock;
 import rearth.oritech.init.BlockContent;
 import rearth.oritech.init.BlockEntitiesContent;
-import rearth.oritech.util.EnergyProvider;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.base.SimpleEnergyStorage;
+import rearth.oritech.util.SimpleEnergyStorage;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class EnergyPipeInterfaceEntity extends GenericPipeInterfaceEntity implements EnergyProvider {
+public class EnergyPipeInterfaceEntity extends GenericPipeInterfaceEntity implements EnergyProvider.BlockEntity {
     
     private final SimpleEnergyStorage energyStorage;
-    private final HashMap<BlockPos, BlockApiCache<EnergyStorage, Direction>> lookupCache = new HashMap<>();
     private final boolean isSuperConductor;
     
     public EnergyPipeInterfaceEntity(BlockPos pos, BlockState state) {
@@ -45,17 +42,17 @@ public class EnergyPipeInterfaceEntity extends GenericPipeInterfaceEntity implem
     @Override
     protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
-        nbt.putLong("energy", energyStorage.getAmount());
+        nbt.putLong("energy", energyStorage.getStoredAmount());
     }
     
     @Override
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
-        energyStorage.amount = nbt.getLong("energy");
+        energyStorage.set(nbt.getLong("energy"));
     }
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     
@@ -66,7 +63,7 @@ public class EnergyPipeInterfaceEntity extends GenericPipeInterfaceEntity implem
         // shuffle em
         // insert until no more energy is available
         
-        if (world.isClient || energyStorage.getAmount() <= 0) return;
+        if (world.isClient || energyStorage.getStoredAmount() <= 0) return;
         
         var dataSource = isSuperConductor ? SuperConductorBlock.SUPERCONDUCTOR_DATA : EnergyPipeBlock.ENERGY_PIPE_DATA;
         
@@ -75,24 +72,17 @@ public class EnergyPipeInterfaceEntity extends GenericPipeInterfaceEntity implem
         
         if (targets == null) return;    // this should never happen
         
+        // TODO caching of find results
         var energyStorages = targets.stream()
-                               .map(target -> findFromCache(world, target.getLeft(), target.getRight()))
-                               .filter(obj -> Objects.nonNull(obj) && obj.supportsInsertion())
+                               .map(target -> EnergyApi.BLOCK.find(world, target.getLeft(), target.getRight()))
+                               .filter(obj -> Objects.nonNull(obj) && obj.allowsInsertion())
                                .collect(Collectors.toList());
         
         Collections.shuffle(energyStorages);
         
-        var availableEnergy = energyStorage.getAmount();
-        try (var tx = Transaction.openOuter()) {
-            for (var targetStorage : energyStorages) {
-                var transferred = targetStorage.insert(availableEnergy, tx);
-                energyStorage.extract(transferred, tx);
-                availableEnergy -= transferred;
-                
-                if (availableEnergy <= 0) break;
-            }
-            
-            tx.commit();
+        for (var targetStorage : energyStorages) {
+            if (energyStorage.getStoredAmount() <= 0) break;
+            TransferUtil.moveValue(energyStorage, targetStorage, Long.MAX_VALUE, false);
         }
         
     }
@@ -101,10 +91,5 @@ public class EnergyPipeInterfaceEntity extends GenericPipeInterfaceEntity implem
     public void markDirty() {
         if (this.world != null)
             world.markDirty(pos);
-    }
-    
-    private EnergyStorage findFromCache(World world, BlockPos pos, Direction direction) {
-        var cacheRes = lookupCache.computeIfAbsent(pos, elem -> BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos));
-        return cacheRes.find(direction);
     }
 }

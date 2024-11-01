@@ -1,14 +1,12 @@
 package rearth.oritech.block.base.entity;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
+import earth.terrarium.common_storage_lib.energy.EnergyApi;
+import earth.terrarium.common_storage_lib.storage.util.TransferUtil;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.FilteringStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.fluid.Fluids;
@@ -18,7 +16,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -28,16 +26,15 @@ import rearth.oritech.init.BlockContent;
 import rearth.oritech.init.FluidContent;
 import rearth.oritech.init.recipes.OritechRecipe;
 import rearth.oritech.network.NetworkContent;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class UpgradableGeneratorBlockEntity extends UpgradableMachineBlockEntity {
     
     public int currentMaxBurnTime; // needed only for progress display
     private List<ItemStack> pendingOutputs = new ArrayList<>(); // used if a recipe produces a byproduct at the end
-    private Multimap<Direction, BlockApiCache<EnergyStorage, Direction>> directionCaches;
     
     public boolean isProducingSteam = false;
     public final SingleVariantStorage<FluidVariant> waterStorage = createBasicTank(FluidVariant.of(Fluids.WATER));
@@ -50,26 +47,6 @@ public abstract class UpgradableGeneratorBlockEntity extends UpgradableMachineBl
     // efficiency multiplier only increases burn time
     public UpgradableGeneratorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyPerTick) {
         super(type, pos, state, energyPerTick);
-    }
-    
-    protected Multimap<Direction, BlockApiCache<EnergyStorage, Direction>> getNeighborCaches(BlockPos pos, World world) {
-        
-        var res = ArrayListMultimap.<Direction, BlockApiCache<EnergyStorage, Direction>>create();
-        
-        var topCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.up());
-        res.put(Direction.UP, topCache);
-        var botCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.down());
-        res.put(Direction.DOWN, botCache);
-        var northCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.north());
-        res.put(Direction.NORTH, northCache);
-        var eastCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.east());
-        res.put(Direction.EAST, eastCache);
-        var southCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.south());
-        res.put(Direction.SOUTH, southCache);
-        var westCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.west());
-        res.put(Direction.WEST, westCache);
-        
-        return res;
     }
     
     @Override
@@ -250,25 +227,16 @@ public abstract class UpgradableGeneratorBlockEntity extends UpgradableMachineBl
             NetworkContent.MACHINE_CHANNEL.serverHandle(this).send(new NetworkContent.GeneratorSteamSyncPacket(pos, steamStorage.amount, waterStorage.amount));
     }
     
+    protected abstract Set<Pair<BlockPos, Direction>> getOutputTargets(BlockPos pos, World world);
+    
     protected void outputEnergy() {
-        if (energyStorage.amount <= 0) return;
-        var availableOutput = Math.min(energyStorage.amount, energyStorage.maxExtract);
-        var totalInserted = 0L;
+        if (energyStorage.getStoredAmount() <= 0) return;
         
-        if (directionCaches == null || availableOutput == 0) directionCaches = getNeighborCaches(pos, world);
-        
-        try (var tx = Transaction.openOuter()) {
-            for (var entry : directionCaches.entries()) {
-                var insertDirection = entry.getKey().getOpposite();
-                var targetCandidate = entry.getValue().find(insertDirection);
-                if (targetCandidate == null) continue;
-                var inserted = targetCandidate.insert(availableOutput, tx);
-                availableOutput -= inserted;
-                totalInserted += inserted;
-                if (availableOutput <= 0) break;
-            }
-            energyStorage.extract(totalInserted, tx);
-            tx.commit();
+        // todo caching for targets? Used to be BlockApiCache.create()
+        for (var target : getOutputTargets(pos, world)) {
+            var candidate = EnergyApi.BLOCK.find(world, target.getLeft(), target.getRight());
+            if (candidate != null)
+                TransferUtil.moveValue(energyStorage, candidate, Long.MAX_VALUE, false);
         }
     }
     

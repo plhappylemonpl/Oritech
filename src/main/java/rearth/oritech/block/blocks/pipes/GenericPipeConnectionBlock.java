@@ -1,6 +1,5 @@
 package rearth.oritech.block.blocks.pipes;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -13,6 +12,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
 import rearth.oritech.Oritech;
 import rearth.oritech.block.entity.pipes.GenericPipeInterfaceEntity;
@@ -26,7 +26,7 @@ public abstract class GenericPipeConnectionBlock extends GenericPipeBlock implem
     public static BlockState addInterfaceState(BlockState state, World world, BlockPos pos) {
         
         var baseState = GenericPipeBlock.addConnectionState(state, world, pos);
-        var lookup = ((GenericPipeBlock) state.getBlock()).getSidesLookup();
+        var lookup = ((GenericPipeBlock) state.getBlock()).apiValidationFunction();
         
         var northConnected = checkConnection(pos.north(), world, Direction.SOUTH, lookup) ? 2 : baseState.get(NORTH);
         var eastConnected = checkConnection(pos.east(), world, Direction.WEST, lookup) ? 2 : baseState.get(EAST);
@@ -44,8 +44,8 @@ public abstract class GenericPipeConnectionBlock extends GenericPipeBlock implem
                  .with(DOWN, downConnected);
     }
     
-    private static boolean checkConnection(BlockPos pos, World world, Direction direction, BlockApiLookup<?, Direction> lookup) {
-        return lookup.find(world, pos, direction) != null && !(world.getBlockState(pos).getBlock() instanceof GenericPipeBlock);
+    private static boolean checkConnection(BlockPos pos, World world, Direction direction, TriFunction<World, BlockPos, Direction, Boolean> lookup) {
+        return lookup.apply(world, pos, direction) && !(world.getBlockState(pos).getBlock() instanceof GenericPipeBlock);
     }
     
     @Override

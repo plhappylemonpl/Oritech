@@ -21,7 +21,6 @@ import rearth.oritech.item.tools.util.OritechEnergyItem;
 import rearth.oritech.network.NetworkContent;
 import rearth.oritech.util.FluidStack;
 import rearth.oritech.util.TooltipHelper;
-import team.reborn.energy.api.base.SimpleEnergyItem;
 
 import java.util.List;
 
@@ -65,7 +64,7 @@ public interface BaseJetpackItem extends OritechEnergyItem {
         // try using energy/fuel
         if (tryUseFluid(stack)) {
             powerMultiplier *= 2.5f;
-        } else if (!tryUseEnergy(stack, getRfUsage())) {
+        } else if (!tryUseEnergy(stack, getRfUsage(), player)) {
             return;
         }
         
@@ -211,8 +210,7 @@ public interface BaseJetpackItem extends OritechEnergyItem {
             return Math.round(fillPercent * BAR_STEP_COUNT) / 100;
         }
         
-        var energyItem = (SimpleEnergyItem) stack.getItem();
-        return Math.round((energyItem.getStoredEnergy(stack) * 100f / energyItem.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
+        return Math.round((getStoredEnergy(stack) * 100f / this.getEnergyCapacity(stack)) * BAR_STEP_COUNT) / 100;
     }
     
     default boolean isValidFuel(FluidVariant variant) {

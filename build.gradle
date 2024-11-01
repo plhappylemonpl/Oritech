@@ -95,11 +95,6 @@ dependencies {
     // gecko lib
     modImplementation "software.bernie.geckolib:geckolib-fabric-${project.geckolib_version}"
 
-    // Energy API
-    include modApi("teamreborn:energy:${project.reborn_energy_version}") {
-        transitive = false
-    }
-
     // REI for Fabric
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api:${rei_version}"
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin:${rei_version}"
@@ -120,23 +115,32 @@ dependencies {
 
     // dependencies for datagen
     // Tech Reborn
-    modImplementation "curse.maven:techreborn-233564:${tech_reborn_version_id}"
-    modImplementation "curse.maven:reborncore-237903:${reborn_core_version_id}"
+    modCompileOnly "curse.maven:techreborn-233564:${tech_reborn_version_id}"
+    modCompileOnly "curse.maven:reborncore-237903:${reborn_core_version_id}"
     // Energized Power
-    modImplementation "curse.maven:energized-power-782147:${energized_power_version_id}"
+    modCompileOnly "curse.maven:energized-power-782147:${energized_power_version_id}"
     // Alloy Forgery
-    modImplementation "curse.maven:alloy-forgery-438718:${alloy_forgery_version_id}"
+    modCompileOnly "curse.maven:alloy-forgery-438718:${alloy_forgery_version_id}"
     // Mythic Metals
-    modImplementation "curse.maven:mythicmetals-410127:${mythic_metals_version_id}"
-    modRuntimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:${cardinal_components_version}"
-    modRuntimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:${cardinal_components_version}"
-    modRuntimeOnly "maven.modrinth:additionalentityattributes:${additional_entity_attributes_version}"
+    modCompileOnly "curse.maven:mythicmetals-410127:${mythic_metals_version_id}"
+//    modRuntimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:${cardinal_components_version}"
+//    modRuntimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:${cardinal_components_version}"
+//    modRuntimeOnly "maven.modrinth:additionalentityattributes:${additional_entity_attributes_version}"
 
     // mod menu
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     // jade
     modImplementation "curse.maven:jade-324717:${jade_id}"
+
+    // common storage lib
+    // modCompileOnly "earth.terrarium.common_storage_lib:common-storage-lib-common-1.21:0.0.3"
+    // modImplementation "earth.terrarium.common_storage_lib:common-storage-lib-fabric-1.21:0.0.3"
+     modImplementation files('Common-Storage-Lib-fabric-1.21-0.0.4.jar')
+     modImplementation files('Common-Storage-Lib-data-fabric-1.21-0.0.4.jar')
+     modImplementation files('Common-Storage-Lib-lookup-fabric-1.21-0.0.4.jar')
+     modImplementation files('Common-Storage-Lib-resources-fabric-1.21-0.0.4.jar')
+     modImplementation files('Common-Storage-Lib-test-fabric-1.21-0.0.4.jar')
 }
 
 processResources {

@@ -1,5 +1,7 @@
 package rearth.oritech.block.entity.machines.interaction;
 
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -32,7 +34,6 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.util.GeckoLibUtil;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.List;
 import static rearth.oritech.block.base.block.MultiblockMachine.ASSEMBLED;
 import static rearth.oritech.block.base.entity.MachineBlockEntity.*;
 
-public class DeepDrillEntity extends BlockEntity implements BlockEntityTicker<DeepDrillEntity>, EnergyProvider, GeoBlockEntity, InventoryProvider, MultiblockMachineController {
+public class DeepDrillEntity extends BlockEntity implements BlockEntityTicker<DeepDrillEntity>, EnergyProvider.BlockEntity, GeoBlockEntity, InventoryProvider, MultiblockMachineController {
     
     // work data
     private boolean initialized;
@@ -54,13 +55,7 @@ public class DeepDrillEntity extends BlockEntity implements BlockEntityTicker<De
     private int energyPerStep = Oritech.CONFIG.deepDrillConfig.energyPerStep();
     
     // storage
-    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Oritech.CONFIG.deepDrillConfig.energyCapacity(), 0, 0) {
-        @Override
-        public void onFinalCommit() {
-            super.onFinalCommit();
-            DeepDrillEntity.this.markDirty();
-        }
-    };
+    protected final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Oritech.CONFIG.deepDrillConfig.energyCapacity(), 0, 0, this::markDirty);
     
     public final SimpleInventory inventory = new SimpleInventory(1) {
         @Override
@@ -207,7 +202,7 @@ public class DeepDrillEntity extends BlockEntity implements BlockEntityTicker<De
     }
     
     @Override
-    public EnergyStorage getStorage(Direction direction) {
+    public ValueStorage getEnergy(Direction direction) {
         return energyStorage;
     }
     
@@ -285,7 +280,7 @@ public class DeepDrillEntity extends BlockEntity implements BlockEntityTicker<De
     }
     
     @Override
-    public EnergyStorage getEnergyStorageForLink() {
+    public ValueStorage getEnergyStorageForLink() {
         return null;
     }
     

@@ -1,12 +1,12 @@
 package rearth.oritech.block.entity.machines.generators;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
+import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
@@ -24,11 +24,11 @@ import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static rearth.oritech.block.base.block.MultiblockMachine.ASSEMBLED;
 
@@ -84,18 +84,17 @@ public class BigSolarPanelEntity extends PassiveGeneratorBlockEntity implements 
         player.sendMessage(Text.translatable("message.oritech.generator.production_rate", getProductionRate(), getCoreQuality()));
     }
     
-    // output only to north and south
+    // output only to north, down and south
     @Override
-    protected HashMap<Direction, BlockApiCache<EnergyStorage, Direction>> getNeighborCaches(BlockPos pos, World world) {
+    protected Set<Pair<BlockPos, Direction>> getOutputTargets(BlockPos pos, World world) {
         
-        var res = new HashMap<Direction, BlockApiCache<EnergyStorage, Direction>>(6);
-        
-        var northCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.north());
-        res.put(Direction.SOUTH, northCache);
-        var southCache = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) world, pos.south());
-        res.put(Direction.NORTH, southCache);
+        var res = new HashSet<Pair<BlockPos, Direction>>();
+        res.add(new Pair<>(pos.down(), Direction.DOWN));
+        res.add(new Pair<>(pos.south(), Direction.NORTH));
+        res.add(new Pair<>(pos.north(), Direction.SOUTH));
         
         return res;
+        
     }
     
     //region multiblock
@@ -125,7 +124,7 @@ public class BigSolarPanelEntity extends PassiveGeneratorBlockEntity implements 
     }
     
     @Override
-    public EnergyStorage getEnergyStorageForLink() {
+    public ValueStorage getEnergyStorageForLink() {
         return null;
     }
     

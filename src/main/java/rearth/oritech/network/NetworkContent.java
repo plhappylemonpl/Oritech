@@ -1,11 +1,11 @@
 package rearth.oritech.network;
 
+import earth.terrarium.common_storage_lib.energy.EnergyProvider;
 import io.wispforest.owo.network.OwoNetChannel;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -30,7 +30,6 @@ import rearth.oritech.init.recipes.OritechRecipe;
 import rearth.oritech.init.recipes.OritechRecipeType;
 import rearth.oritech.item.tools.armor.BaseJetpackItem;
 import rearth.oritech.util.*;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.List;
 import java.util.Map;
@@ -218,7 +217,7 @@ public class NetworkContent {
             
             var entity = access.player().clientWorld.getBlockEntity(message.position);
             
-            if (entity instanceof EnergyProvider energyProvider && energyProvider.getStorage(null) instanceof DynamicEnergyStorage storage) {
+            if (entity instanceof EnergyProvider.BlockEntity energyProvider && energyProvider.getEnergy(null) instanceof DynamicEnergyStorage storage) {
                 storage.capacity = message.maxEnergy;
                 storage.amount = message.currentEnergy;
             }
@@ -504,7 +503,7 @@ public class NetworkContent {
             // to prevent dedicated servers from kicking the player for flying
             player.networkHandler.floatingTicks = 0;
             
-            stack.set(EnergyStorage.ENERGY_COMPONENT, message.energyStored);
+            stack.set(Oritech.ENERGY_CONTENT.componentType(), message.energyStored);
             stack.set(ComponentContent.STORED_FLUID, new FluidStack(Registries.FLUID.get(Identifier.of(message.fluidType)), message.fluidAmount));
             
         });
