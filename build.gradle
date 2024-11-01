@@ -134,13 +134,13 @@ dependencies {
     modImplementation "curse.maven:jade-324717:${jade_id}"
 
     // common storage lib
-    // modCompileOnly "earth.terrarium.common_storage_lib:common-storage-lib-common-1.21:0.0.3"
-    // modImplementation "earth.terrarium.common_storage_lib:common-storage-lib-fabric-1.21:0.0.3"
-     modImplementation files('Common-Storage-Lib-fabric-1.21-0.0.4.jar')
-     modImplementation files('Common-Storage-Lib-data-fabric-1.21-0.0.4.jar')
-     modImplementation files('Common-Storage-Lib-lookup-fabric-1.21-0.0.4.jar')
-     modImplementation files('Common-Storage-Lib-resources-fabric-1.21-0.0.4.jar')
-     modImplementation files('Common-Storage-Lib-test-fabric-1.21-0.0.4.jar')
+     modCompileOnly "earth.terrarium.common_storage_lib:common-storage-lib-common-1.21:0.0.4"
+     modRuntimeOnly "earth.terrarium.common_storage_lib:common-storage-lib-fabric-1.21:0.0.4"
+//     modImplementation files('Common-Storage-Lib-fabric-1.21-0.0.4.jar')
+//     modImplementation files('Common-Storage-Lib-data-fabric-1.21-0.0.4.jar')
+//     modImplementation files('Common-Storage-Lib-lookup-fabric-1.21-0.0.4.jar')
+//     modImplementation files('Common-Storage-Lib-resources-fabric-1.21-0.0.4.jar')
+//     modImplementation files('Common-Storage-Lib-test-fabric-1.21-0.0.4.jar')
 }
 
 processResources {
