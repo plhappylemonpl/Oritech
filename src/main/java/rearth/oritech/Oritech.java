@@ -1,6 +1,7 @@
 package rearth.oritech;
 
 import com.mojang.serialization.Codec;
+import earth.terrarium.common_storage_lib.CommonStorageLib;
 import earth.terrarium.common_storage_lib.data.DataManager;
 import earth.terrarium.common_storage_lib.data.DataManagerRegistry;
 import io.wispforest.owo.registration.reflect.FieldRegistrationHandler;
@@ -40,6 +41,9 @@ public class Oritech implements ModInitializer {
     
     @Override
     public void onInitialize() {
+        
+        // this shouldn't be needed, yet here we are
+        CommonStorageLib.init();
         
         LOGGER.info("Begin Oritech initialization");
         

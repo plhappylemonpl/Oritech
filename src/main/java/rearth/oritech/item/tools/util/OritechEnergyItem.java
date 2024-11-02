@@ -44,8 +44,20 @@ public interface OritechEnergyItem extends EnergyProvider.Item, FabricItem {
         }
         
         // this feels like a horrible abomination
-        var slot = PlayerContext.ofHand(player, Hand.MAIN_HAND);
+        var slotIndex = 0;
+        for (int i = 0; i < player.getInventory().size(); i++) {
+            var invStack = player.getInventory().getStack(i);
+            if (invStack == stack) {
+                slotIndex = i;
+                break;
+            }
+        }
+        
+        System.out.println(slotIndex);
+        
+        var slot = PlayerContext.ofSlot(player, slotIndex);
         var storage = slot.find(EnergyApi.ITEM);
+        
         if (storage instanceof SimpleEnergyStorage simpleStorage) {
             var extracted = simpleStorage.extractIgnoringLimit(amount, false);
             if (extracted > 0) {

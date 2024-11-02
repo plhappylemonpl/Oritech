@@ -85,10 +85,16 @@ public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker
     public void tick(World world, BlockPos pos, BlockState state, ChargerBlockEntity blockEntity) {
         if (world.isClient) return;
         
+        if (networkDirty) {
+            updateNetwork();
+        }
+        
         // stop if no input is given, or it's a stackable item
         if (inventory.getStack(0).isEmpty() || inventory.getStack(0).getCount() > 1) return;
         
         var isFull = true;
+        var startEnergy = energyStorage.amount;
+        var startFluid = fluidStorage.amount;
         
         // try charge item
         if (!chargeItems()) isFull = false;
@@ -105,9 +111,8 @@ public class ChargerBlockEntity extends BlockEntity implements BlockEntityTicker
             }
         }
         
-        if (networkDirty) {
+        if (fluidStorage.amount != startFluid || energyStorage.amount != startEnergy) {
             ParticleContent.ASSEMBLER_WORKING.spawn(world, pos.toCenterPos().add(0.1, 0.1, 0), 1);
-            updateNetwork();
         }
         
     }

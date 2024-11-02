@@ -1,12 +1,13 @@
 package rearth.oritech.util;
 
+import earth.terrarium.common_storage_lib.storage.base.UpdateManager;
 import earth.terrarium.common_storage_lib.storage.base.ValueStorage;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public class DelegatingEnergyStorage implements ValueStorage {
+public class DelegatingEnergyStorage implements ValueStorage, UpdateManager<Long> {
     
     protected final Supplier<ValueStorage> backingStorage;
     protected final BooleanSupplier validPredicate;
@@ -66,5 +67,28 @@ public class DelegatingEnergyStorage implements ValueStorage {
             return backingStorage.get().extract(amount, simulate);
         }
         return 0;
+    }
+    
+    @Override
+    public Long createSnapshot() {
+        if (validPredicate.getAsBoolean() && backingStorage.get() instanceof UpdateManager<?> manager) {
+            return (Long) manager.createSnapshot();
+        }
+        return 0L;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public void readSnapshot(Long snapshot) {
+        if (validPredicate.getAsBoolean() && backingStorage.get() instanceof UpdateManager<?> manager) {
+            ((UpdateManager<Long>) manager).readSnapshot(snapshot);
+        }
+    }
+    
+    @Override
+    public void update() {
+        if (validPredicate.getAsBoolean() && backingStorage.get() instanceof UpdateManager<?> manager) {
+            manager.update();
+        }
     }
 }

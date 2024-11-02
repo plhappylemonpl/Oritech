@@ -115,8 +115,8 @@ dependencies {
 
     // dependencies for datagen
     // Tech Reborn
-    modCompileOnly "curse.maven:techreborn-233564:${tech_reborn_version_id}"
-    modCompileOnly "curse.maven:reborncore-237903:${reborn_core_version_id}"
+    modImplementation "curse.maven:techreborn-233564:${tech_reborn_version_id}"
+    modImplementation "curse.maven:reborncore-237903:${reborn_core_version_id}"
     // Energized Power
     modCompileOnly "curse.maven:energized-power-782147:${energized_power_version_id}"
     // Alloy Forgery
@@ -134,8 +134,8 @@ dependencies {
     modImplementation "curse.maven:jade-324717:${jade_id}"
 
     // common storage lib
-     modCompileOnly "earth.terrarium.common_storage_lib:common-storage-lib-common-1.21:0.0.4"
-     modRuntimeOnly "earth.terrarium.common_storage_lib:common-storage-lib-fabric-1.21:0.0.4"
+     modCompileOnly "earth.terrarium.common_storage_lib:common-storage-lib-common-1.21:0.0.5"
+     modRuntimeOnly "earth.terrarium.common_storage_lib:common-storage-lib-fabric-1.21:0.0.5"
 //     modImplementation files('Common-Storage-Lib-fabric-1.21-0.0.4.jar')
 //     modImplementation files('Common-Storage-Lib-data-fabric-1.21-0.0.4.jar')
 //     modImplementation files('Common-Storage-Lib-lookup-fabric-1.21-0.0.4.jar')
