@@ -11,6 +11,6 @@
 }
 ```
 
-Energite is an alloy of [nickel](^oritech:resources/nickel) and [fluxite](^oritech:resources/fluxite) that can only be made in a [foundry](^oritech:processing/foundry).
+Energit to stop [niklu](^oritech:resources/nickel) i [fluxitu](^oritech:resources/fluxite), który można wytworzyć wyłącznie w [hucie](^oritech:processing/foundry).
 
-It is used for batteries, machine addons, and components that are used to create some machines that generate or store energy.
+Służy do tworzenia baterii, dodatków do maszyn oraz komponentów wykorzystywanych do budowy niektórych maszyn generujących lub magazynujących energię.

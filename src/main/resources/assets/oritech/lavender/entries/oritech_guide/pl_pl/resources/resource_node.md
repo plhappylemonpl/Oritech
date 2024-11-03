@@ -18,14 +18,14 @@
 }
 ```
 
-Resource nodes are found throughout the world, appearing in clusters just on top of the bedrock layer. There are resource nodes for all overworld ore types. They are usually covered by a small pocket of [crude oil](^oritech:resources/crude_oil).
+Węzły zasobów można znaleźć w całym świecie, pojawiają się w skupiskach tuż nad warstwą bedrocku. Istnieją węzły zasobów dla wszystkich typów rud w świecie nadziemnym. Zwykle są przykryte małą kieszenią [surowej ropy](^oritech:resources/crude_oil).
 
-Resource nodes can only be mined with a [bedrock extractor](^oritech:interaction/deepdrill).
+Węzły zasobów można wydobywać tylko za pomocą [ekstraktora bedrocku](^oritech:interaction/deepdrill).
 
-On the surface, the location of a resource node cluster can be identified by the
+Na powierzchni lokalizację skupiska węzłów zasobów można zidentyfikować po
 
 ;;;;;
 
-![resource_node](oritech:textures/book/resource_node.png,fit)
+![węzeł zasobów](oritech:textures/book/resource_node.png,fit)
 
-occurrence of an [ore boulder](^oritech:resources/ore_boulder). The ore boulder also identifies the type of ores found in the cluster.
+występowaniu [bouldera rudy](^oritech:resources/ore_boulder). Boulder rudy identyfikuje również typ rud znajdujących się w skupisku.

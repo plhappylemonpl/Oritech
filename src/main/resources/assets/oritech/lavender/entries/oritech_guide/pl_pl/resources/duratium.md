@@ -11,6 +11,6 @@
 }
 ```
 
-Duratium is an alloy of [platinum](^oritech:resources/platinum) and netherite that can only be made in a [foundry](^oritech:processing/foundry).
+Duratium to stop złożony z [platyny](^oritech:resources/platinum) i netheritu, który można wytwarzać tylko w [hucie](^oritech:processing/foundry).
 
-It is used to build the [atomic forge](^oritech:processing/atomic_forge), [bedrock extractor](^oritech:processing/bedrock_extractor) and the ultra (tier 6) machine core.
+Jest używany do budowy [kuźni atomowej](^oritech:processing/atomic_forge), [ekstraktora skały macierzystej](^oritech:processing/bedrock_extractor) oraz ultra rdzenia maszyny (poziom 6).

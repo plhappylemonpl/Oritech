@@ -18,10 +18,8 @@
 }
 ```
 
-One of the first resources you'll need to gather, nickel ores can be found in [ore boulders](^oritech:resources/ore_boulder) or underground. Similar to iron, it is found most often deep underground where deepslate starts appearing.
+Jednym z pierwszych zasobów, które musisz zebrać, są rudy niklu, które można znaleźć w [blokach rudnych](^oritech:resources/ore_boulder) lub pod ziemią. Podobnie jak żelazo, nikiel występuje najczęściej głęboko pod ziemią, gdzie zaczyna pojawiać się głębinowy łupek.
 
-Nickel is used in several alloys and is used to make most machines and machine parts.
+Nikiel jest używany w kilku stopach i służy do tworzenia większości maszyn oraz części do nich.
 
-;;;;;
-
-Processing raw nickel (or nickel ore!) in a [fragment forge](^oritech:processing/fragment_forge) is a great way to get some [platinum](^oritech:resources/platinum).
+Przetwarzanie surowego niklu (lub rudy niklu!) w [kuźni fragmentów](^oritech:processing/fragment_forge) to świetny sposób na uzyskanie odrobiny [platyny](^oritech:resources/platinum).

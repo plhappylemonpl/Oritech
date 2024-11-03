@@ -10,10 +10,8 @@
 }
 ```
 
-Fluxite is an important component of the flux gate, which is required for building some of the more advanced machines. The best way to obtain fluxite is by mining an amethyst cluster with an [enderic easer](^oritech:interaction/enderic_laser).
+Fluxit jest ważnym komponentem bramy strumieniowej, która jest niezbędna do budowy bardziej zaawansowanych maszyn. Najlepszym sposobem na pozyskanie fluxitu jest wydobycie klastra ametystu za pomocą [lasera enderycznego](^oritech:interaction/enderic_laser).
 
-Fluxite can also be found when processing [platinum](^oritech:resources/platinum) ores.
+Fluxit można również znaleźć podczas przetwarzania rud [platyny](^oritech:resources/platinum).
 
-;;;;;
-
-![mining fluxite](^oritech:laser_fluxite.png,fit)
+![wydobywanie fluxitu](^oritech:laser_fluxite.png,fit)

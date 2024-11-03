@@ -10,6 +10,6 @@
 }
 ```
 
-Enderic Compound is a strange but useful substance that can be obtained by crushing ender pearls in a [pulverizer](^oritech:processing/pulverizer) or [fragment forge](^oritech:processing/fragment_forge), or by processing sculk in a [centrifuge](^oritech:processing/centrifuge).
+Enderyczny Związek to dziwna, ale użyteczna substancja, którą można uzyskać poprzez rozdrabnianie pereł enderu w [pulweryzatorze](^oritech:processing/pulverizer) lub [kuźni fragmentów](^oritech:processing/fragment_forge), lub przetwarzając skulk w [wirówce](^oritech:processing/centrifuge).
 
-Enderic Compound can be used to make budding amethyst in an [assembler](^oritech:processing/assembler), or to duplicate ores with an [atomic forge](^oritech:processing/atomic_forge).
+Enderyczny Związek można wykorzystać do tworzenia rosnącego ametystu w [assemblerze](^oritech:processing/assembler) lub do duplikowania rud w [kuźni atomowej](^oritech:processing/atomic_forge).

@@ -13,6 +13,6 @@
 
 ;;;;;
 
-Pockets of crude oil can be found in many places underground. They are also common near the surface in desert biomes where they can be seen gushing out from the ground.
+Złoża ropy naftowej można znaleźć w wielu miejscach pod ziemią. Są również powszechne blisko powierzchni w biomach pustynnych, gdzie można je zobaczyć wytryskujące z ziemi.
 
-Crude oil can be processed with a [centrifuge](^oritech:processing/centrifuge) (with [fluid addon](^oritech:processing/addons)) into plastic sheets or turbofuel.
+Ropę naftową można przetworzyć w [wirówce](^oritech:processing/centrifuge) (z [dodatkiem do płynów](^oritech:processing/addons)) na arkusze plastiku lub turbopaliwo.

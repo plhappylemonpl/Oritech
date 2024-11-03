@@ -18,6 +18,6 @@
 }
 ```
 
-Platinum is an important resource. Like diamond, it can be difficult to find. Platinum ores can be found most frequently while mining near bedrock. It can also be found easily in the End.
+Platyna jest ważnym zasobem. Podobnie jak diament, może być trudna do znalezienia. Rudy platyny najczęściej można znaleźć, kopiąc w pobliżu skał macierzystych. Jest także łatwo dostępna w Endzie.
 
-Platinum can also be found while processing [nickel](^oritech:resources/nickel) in a [fragment forge](^oritech:processing/fragment_forge).
+Platynę można również uzyskać podczas przetwarzania [niklu](^oritech:resources/nickel) w [kuźni fragmentów](^oritech:processing/fragment_forge).

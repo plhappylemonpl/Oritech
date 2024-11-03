@@ -11,12 +11,12 @@
 }
 ```
 
-Electrum is a basic alloy that is used to create [generators](^oritech:logistics/generators), [energy pipes](^oritech:logistics/energy), and other components, machines, and addons.
+Electrum to podstawowy stop, który służy do tworzenia [generatorów](^oritech:logistics/generators), [kabli energetycznych](^oritech:logistics/energy) oraz innych komponentów, maszyn i dodatków.
 
-Electrum can be created in a crafting grid:
+Electrum można stworzyć w siatce rzemieślniczej:
 
 <recipe;oritech:crafting/alloy/electrum>
 
 ;;;;;
 
-The [foundry](^oritech:processing/foundry) can produce more electrum with less gold and redstone.
+[Huta](^oritech:processing/foundry) może produkować więcej electrum przy mniejszym zużyciu złota i redstone.

@@ -6,14 +6,10 @@
 }
 ```
 
-![ore_boulder](oritech:textures/book/ore_boulder.png,fit)
+Bloki rudne można znaleźć na powierzchni świata. Są wykonane z głębinowego łupka i są bogate w rudy.
 
-;;;;;
+Zapamiętaj, gdzie je znalazłeś!
 
-Ore boulders are found on the surface of the world. They're made out of deepslate and are rich in ores.
+[Złoża zasobów](^oritech:resources/resource_node) można znaleźć pod blokami rudnymi, blisko skał macierzystych. Często są one pokryte kieszeniami z [ropy naftowej](^oritech:resources/crude_oil) lub wody.
 
-Remember where you found them!
-
-[Resource nodes](^oritech:resources/resource_node) can be found below ore boulders near bedrock, and are often covered by pockets of [crude oil](^oritech:resources/crude_oil) or water.
-
-The ores in the ore boulder indicate which ores can be found in the resource node below.
+Rudy w bloku rudnym wskazują, jakie rudy można znaleźć w złożu zasobów poniżej.

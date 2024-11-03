@@ -10,6 +10,6 @@
 }
 ```
 
-Prometheum is an advanced material that can only be produced in an [atomic forge](^oritech:processing/atomic_forge).
+Prometeum to zaawansowany materiał, który można produkować tylko w [atomowej kuźni](^oritech:processing/atomic_forge).
 
-It is used for crafting [prometheum tools](^oritech:tools/prometheum_tools) and the ultimate (tier 7) machine core.
+Jest używany do tworzenia [narzędzi prometeum](^oritech:tools/prometheum_tools) oraz ostatecznego (poziom 7) rdzenia maszyny.

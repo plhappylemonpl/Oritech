@@ -11,10 +11,10 @@
 }
 ```
 
-Raw silicon can be created by grinding nether quartz in a [pulverizer](^oritech:processing/pulverizer) or a [fragment forge](^oritech:processing/fragment_forge) and mixing the quartz dust with sand.
+Surowy krzem można wytworzyć, mieląc kwarc netherowy w [pulweryzatorze](^oritech:processing/pulverizer) lub w [kuźni fragmentów](^oritech:processing/fragment_forge) i mieszając pył kwarcowy z piaskiem.
 
-<recipe;oritech:crafting/alloy/rawsilicon>
+<przepis;oritech:crafting/alloy/rawsilicon>
 
 ;;;;;
 
-Smelt the raw silicon to get silicon, which you will need before you can build [fluid pipes](^oritech:logistics/fluid_transport) or any other fluid processing machines.
+Wypal surowy krzem, aby uzyskać krzem, który będzie potrzebny przed zbudowaniem [rurociągów płynów](^oritech:logistics/fluid_transport) lub innych maszyn do przetwarzania płynów.

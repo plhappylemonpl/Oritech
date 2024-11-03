@@ -11,12 +11,12 @@
 }
 ```
 
-Steel is a basic alloy that is used to create the wires, coils, motors, and plating that are used to build all of the other machines.
+Stal jest podstawowym stopem, który jest używany do tworzenia przewodów, cewek, silników i osłon wykorzystywanych do budowy wszystkich innych maszyn.
 
-Steel can be created in a crafting grid:
+Stal można wytworzyć w siatce rzemieślniczej:
 
-<recipe;oritech:crafting/alloy/steel>
+<przepis;oritech:crafting/alloy/steel>
 
 ;;;;;
 
-The [foundry](^oritech:processing/foundry) can produce more steel with less iron and coal.
+[Kuźnia](^oritech:processing/foundry) może produkować więcej stali z mniejszą ilością żelaza i węgla.
