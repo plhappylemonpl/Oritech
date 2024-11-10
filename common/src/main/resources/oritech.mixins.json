@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "rearth.oritech.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+    "ElytraFeatureRendererMixin"
+  ],
+  "mixins": [
+    "PlayerEntityMixin",
+    "LivingEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

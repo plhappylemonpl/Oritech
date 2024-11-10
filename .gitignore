@@ -1,7 +1,9 @@
 # gradle
 
+*/.gradle/
 .gradle/
 build/
+*/build
 out/
 classes/
 
@@ -23,7 +25,8 @@ classes/
 bin/
 .classpath
 .project
-src/main/generated/.cache
+*/.cache
+common/src/main/generated/.cache/
 
 # macos
 
@@ -32,6 +35,7 @@ src/main/generated/.cache
 # fabric
 
 run/
+*/run/
 
 # java
 
