@@ -1,12 +1,6 @@
 package rearth.oritech.generator.compat;
 
-import static rearth.oritech.api.recipe.util.RecipeHelpers.createInsulatedCableRecipe;
-
-import java.util.List;
-import java.util.Optional;
-
 import com.enderio.base.common.init.EIOItems;
-import com.enderio.base.common.recipe.FireCraftingRecipe;
 import com.enderio.machines.common.blocks.alloy.AlloySmeltingRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -15,8 +9,6 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import rearth.oritech.Oritech;
@@ -25,7 +17,10 @@ import rearth.oritech.api.recipe.FoundryRecipeBuilder;
 import rearth.oritech.init.BlockContent;
 import rearth.oritech.init.ItemContent;
 import rearth.oritech.init.TagContent;
-import rearth.oritech.generator.loot.FireCraftingLootProvider;
+
+import java.util.List;
+
+import static rearth.oritech.api.recipe.util.RecipeHelpers.createInsulatedCableRecipe;
 
 public class EnderIORecipeGenerator {
     private static final String PATH = "compat/enderio/";
@@ -74,7 +69,7 @@ public class EnderIORecipeGenerator {
     }
 
     private static void addFireCrafting(RecipeOutput exporter) {
-        exporter.accept(Oritech.id(PATH + "firecrafting/sculk"), new FireCraftingRecipe(FireCraftingLootProvider.SCULK_CRAFTING, 2, List.of(Blocks.SCULK), List.of(), List.of(Level.OVERWORLD), Optional.of(Blocks.AIR)), null);
-        exporter.accept(Oritech.id(PATH + "firecrafting/endstone"), new FireCraftingRecipe(FireCraftingLootProvider.SCULK_CRAFTING, 1, List.of(Blocks.END_STONE), List.of(), List.of(Level.END), Optional.of(Blocks.BLACKSTONE)), null);
+        // exporter.accept(Oritech.id(PATH + "firecrafting/sculk"), new FireCraftingRecipe(FireCraftingLootProvider.SCULK_CRAFTING, 2, List.of(Blocks.SCULK), List.of(), List.of(Level.OVERWORLD), Optional.of(Blocks.AIR)), null);
+        // exporter.accept(Oritech.id(PATH + "firecrafting/endstone"), new FireCraftingRecipe(FireCraftingLootProvider.SCULK_CRAFTING, 1, List.of(Blocks.END_STONE), List.of(), List.of(Level.END), Optional.of(Blocks.BLACKSTONE)), null);
     }
 }

@@ -41,7 +41,6 @@ repositories {
     // Registrate
     maven { url = "https://mvn.devos.one/snapshots" }
 }
-
 dependencies {
     // NeoForge
     neoForge "net.neoforged:neoforge:$neoforge_version"
@@ -62,6 +61,7 @@ dependencies {
     modImplementation "curse.maven:jade-324717:5846105"
     // owo-lib
     modImplementation "io.wispforest:owo-lib-neoforge:$owo_neo_version"
+
     forgeRuntimeLibrary(include(api("io.wispforest:endec:0.1.8")))
     forgeRuntimeLibrary(include(api("io.wispforest.endec:netty:0.1.4")))
     forgeRuntimeLibrary(include(api("io.wispforest.endec:gson:0.1.5")))
