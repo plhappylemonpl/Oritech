@@ -50,7 +50,7 @@ sourceSets {
         resources.exclude "**/recipe"
     }
     fabric {
-        // make recipes available to fabric build
+        // make recipes available to fabric build (TODO this doesnt seem to copy anything)
         resources {
             srcDir "src/main/generated"
             include "**/recipe/**"
