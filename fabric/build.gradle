@@ -68,12 +68,13 @@ dependencies {
     }
 
     // in-game testing
-    modImplementation "curse.maven:reborncore-237903:5608204"
     modImplementation "curse.maven:simple-conveyor-belts-1292980:6721806"
     modImplementation "curse.maven:tags-viewer-1119728:5807898"
-    modImplementation "curse.maven:techreborn-233564:5608205"
     
     // datagen
+    // Tech Reborn
+    modDataImplementation "curse.maven:reborncore-237903:5608204"
+    modDataImplementation "curse.maven:techreborn-233564:5608205"
     // Alloy Forgery
     modDataImplementation "curse.maven:alloy-forgery-438718:$alloy_forgery_version_id"
     // Clutter

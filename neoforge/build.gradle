@@ -9,26 +9,6 @@ architectury {
 
 loom {
     accessWidenerPath.set(project(":common").loom.accessWidenerPath)
-
-    runs {
-        create("data") {
-            data()
-            name("Minecraft Data")
-            source("data")
-
-            programArgs("--all", "--mod", archives_name)
-            programArgs("--output", file("src/main/generated").absolutePath)
-            programArgs("--existing", project(":common").file("src/main/resources").absolutePath)
-            programArgs("--existing", file("src/main/resources").absolutePath)
-
-            mods {
-                create(archives_name) {
-                    sourceSet("main")
-                    sourceSet("data")
-                }
-            }
-        }
-    }
 }
 
 repositories {
@@ -115,6 +95,16 @@ dependencies {
     modDataRuntimeOnly "me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version"
     // Productive Metalworks
     modDataImplementation "curse.maven:productive-metalworks-1184570:$productive_metalworks_version_id"
+}
+
+processResources {
+    inputs.property 'version', project.version
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand version: project.version
+    }
+
+    from('src/main/generated')
 }
 
 publishMods {

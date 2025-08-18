@@ -6,6 +6,11 @@ plugins {
     id "me.modmuss50.mod-publish-plugin" version "0.8.0" apply false
 }
 
+tasks.register('runDatagenNeoforge', GradleBuild) {
+    buildFile = 'neoforgedatagen/build.gradle'
+    tasks = ['runData']
+}
+
 architectury {
     minecraft = minecraft_version
 }

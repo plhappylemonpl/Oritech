@@ -22,7 +22,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import rearth.oritech.Oritech;
-import rearth.oritech.api.attachment.neoforge.AttachmentApiImpl;
+import rearth.oritech.OritechPlatform;
 import rearth.oritech.api.energy.EnergyApi;
 import rearth.oritech.api.fluid.FluidApi;
 import rearth.oritech.api.item.ItemApi;
@@ -41,7 +41,7 @@ public final class OritechModNeoForge {
         eventBus.register(new EventHandler());
         EventHandler.COMPONENT_REGISTRAR.register(eventBus);
         
-        AttachmentApiImpl.ATTACHMENT_TYPES.register(eventBus);
+        OritechPlatformNeoForge.ATTACHMENT_TYPES.register(eventBus);
         
         fluidApiInstance = new NeoforgeFluidApiImpl();
         FluidApi.BLOCK = fluidApiInstance;
