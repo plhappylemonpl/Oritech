@@ -7,6 +7,12 @@ architectury {
     fabric()
 }
 
+tasks.named("processResources") {
+    from(project(":common").file("src/main/generated")) {
+        include "**/recipe/**"
+    }
+}
+
 loom {
     accessWidenerPath.set(project(":common").loom.accessWidenerPath)
 

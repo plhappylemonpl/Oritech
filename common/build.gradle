@@ -49,14 +49,6 @@ sourceSets {
         // exclude recipes from common because they're loader specific
         resources.exclude "**/recipe"
     }
-    fabric {
-        // make recipes available to fabric build (TODO this doesnt seem to copy anything)
-        resources {
-            srcDir "src/main/generated"
-            include "**/recipe/**"
-        }
-        output.resourcesDir = "data"
-    }
 }
 
 tasks.named('processResources') {
