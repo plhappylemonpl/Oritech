@@ -98,7 +98,7 @@ public class MachineCoreBlock extends Block implements EntityBlock {
     }
     
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    public @NotNull InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         
         if (!state.getValue(USED)) return InteractionResult.PASS;
         
