@@ -36,6 +36,10 @@ dependencies {
 
     // Oracle Index
     modCompileOnly "curse.maven:oracle-index-1206582:6538216"
+
+    // ftb chunks
+    modCompileOnly "curse.maven:ftb-chunks-forge-314906:5598952"
+    modCompileOnly "curse.maven:ftb-library-forge-404465:6874538"
 }
 
 tasks.withType(AbstractCopyTask).configureEach {
